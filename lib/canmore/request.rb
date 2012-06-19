@@ -9,7 +9,7 @@ module Canmore
     SEARCH_DEFAULT_PARAMS={ :site_country => 1, :image_only_chk => 1, :submit => 'search'}    
     THUMB_URL = "/images/m/"
 
-    def self.get_html(url = CANMORE_URL, params = nil, client == HTTParty)
+    def self.get_html(url = CANMORE_URL, params = nil, client = HTTParty)
       client.get(CANMORE_URL + url, :query => params).body
     end    
     
