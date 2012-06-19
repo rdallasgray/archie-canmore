@@ -24,7 +24,7 @@ module Canmore
       image_details = []
       detail_links = Canmore::Parser::Search.new(html).detail_links
       six_digit_rel = /site\/([0-9]{6})\//
-      detail_links.select {|link| link.match(six_digit_rel)}.map {|link| link.match(six_digit_rel)[0]}
+      detail_links.select {|link| link.match(six_digit_rel)}.map {|link| link.match(six_digit_rel)[1]}
     end
 
     def self.details_for(rel)
