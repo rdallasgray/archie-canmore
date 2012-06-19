@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Canmore Advanced Search</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="description" content="Canmore is the heart of the RCAHMS archive. It provides searchable, map-based information on buildings and archaeological sites throughout Scotland." />
+<meta name="keywords" content="Canmore, RCAHMS, database, Scotland, search" />
+<meta name="Author" content="RCAHMS" />
+<meta name="revisit-after" content="7 days" />
+<meta name="robots" content="INDEX, FOLLOW" />
+<meta name="pinterest" content="nopin" />
+<style type="text/css">@import/**/"/css/style.css";</style>
+<link rel="stylesheet" href="/css/jquery.lightbox-0.5.css" type="text/css" media="screen"  />
+<link rel="stylesheet" href="/css/print.css" type="text/css" media="print"  />
+<!-- Fixes for IE -->
+<!--[if IE]><link href="/css/ie.6.css" type="text/css" rel="stylesheet" media="screen" /><![endif]-->
+<!--[if IE 6]><style type="text/css">div#content_canmore .imgRight{float:left;}.related_material_links{margin-right:20px;}</style><![endif]-->
+
+
+
+<script type="text/javascript" src="/js/jquery-1.2.6.min.js"></script> 
+<script type="text/javascript" src="/js/jquery.validate.min.js"></script>   
+<script type="text/javascript" src="/js/jquery.bgiframe.js"></script>  
+<script type="text/javascript" src="/js/jquerypngfix.js"></script> 
+<script type="text/javascript" src="/js/jquery.autocomplete.min.js"></script>  
+<script type="text/javascript" src="/js/jquery.cookies.2.0.min.js"></script>   
+<script type="text/javascript" src="/js/jquery.tooltip.min.js"></script>   
+<script type="text/javascript" src="/js/stepcarousel.js"></script>  
+<script type="text/javascript" src="/js/jquery.lightbox-0.5.min.js"></script>
+<script type="text/javascript" src="/js/canmore.js"></script>
+
+
+<link rel="icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" /> 
+</head>
+<body>
+<div id="container" class="clear">
+	<div id="header">
+		<h1 class="hidden">Canmore Advanced Search</h1>
+		<h2>
+			<a href="http://www.rcahms.gov.uk/" title="Back to RCAHMS home page">Royal Commission on the Ancient and Historical Monuments of Scotland</a>
+		</h2>
+		<h2 id="canmore">Canmore is the heart of the RCAHMS archive. It provides searchable, map-based information on buildings and archaeological sites throughout Scotland.</h2> 
+	</div>
+	<div id="navigation">
+		<p>Scotland's national collection of buildings, archaeology and industry</p>
+		
+		<h3 class="hidden">Home Menu</h3>
+		<ul class="standalone">
+			<li><a href="http://www.rcahms.gov.uk/">Home</a></li>
+		</ul>
+		
+		<h3>Canmore</h3>		<ul>
+			<li ><a href="/en/search/">Search</a></li>
+			<li class="selected"><a href="/en/advanced/" class="new_search">Advanced Search</a></li>
+			<li ><a href="/en/mycanmore/" class="new_search">MyCanmore</a></li>
+			<li><a href="http://lmid1a.rcahms.gov.uk/rcahms/apps/f?p=210">Thesaurus</a></li>
+			<!--  <li><a href="http://jura.rcahms.gov.uk/CANMAP/start.jsp" class="external">Canmap</a></li>  -->
+			<li><a href="http://canmoremapping.rcahms.gov.uk/" class="external">Canmore Mapping</a></li>
+			<li><a href="/en/register/">Register</a></li><li><a href="/en/login/">Login</a></li>		</ul>
+		
+		<h3>Resources</h3>
+		<ul>
+			<li><a href="http://www.rcahms.gov.uk/search.html">Search Resources</a></li>
+			<li><a href="http://www.rcahms.gov.uk/visit-our-search-room.html">Visit Our Search Room</a></li>
+			<li><a href="http://www.rcahms.gov.uk/buy-images-and-data.html">Buy Images and Data</a></li>
+			<li><a href="http://www.rcahms.gov.uk/rcahms-publications.html">RCAHMS Publications</a></li>
+			<li><a href="http://www.rcahms.gov.uk/guides.html">Events and Guides</a></li>
+			<li><a href="http://www.rcahms.gov.uk/press-and-media.html">Press and Media</a></li>
+		</ul> 
+		<h3>Collections</h3>
+		<ul>
+			<li><a href="http://www.rcahms.gov.uk/what-we-hold.html">What We Hold</a></li>
+			<li><a href="http://www.rcahms.gov.uk/latest-accessions.html">Latest Accessions</a></li>
+			<li><a href="http://www.rcahms.gov.uk/collection-highlights.html">Collection Highlights</a></li>
+		</ul> 
+		<h3>Work</h3>
+		<ul>
+			<li><a href="http://www.rcahms.gov.uk/news.html">News</a></li>
+			<li><a href="http://www.rcahms.gov.uk/about-us.html">About Us</a></li>
+			<li><a href="http://www.rcahms.gov.uk/survey-and-recording.html">Survey and Recording</a></li>
+			<li><a href="http://www.rcahms.gov.uk/rcahms-projects.html">RCAHMS Projects</a></li>
+			<li><a href="http://www.rcahms.gov.uk/jobs.html">Jobs</a></li>
+			<li><a href="http://www.rcahms.gov.uk/links.html">Links</a></li>
+		</ul> 
+	</div>
+	<div id="searching" class="clear">
+		<h4 class="hidden">Your Last Search</h4>
+		
+					
+					<form action="/en/search/" method="get" id="search_for" title="simple">
+				<p  id="search_for_chk">
+				<label title="filter results for images only" for="image_only_chk">Online items only</label>
+				<input name="image_only_chk" type="checkbox" value="1" id="image_only_chk" class="checkbox" checked="checked" ></input>
+				</p>
+				<label title="Type Here" for="field_text" class="hidden">Enter search term</label>
+				<input name="keyword" type="text" value="Type Here" id="field_text" class="submit" />
+				
+				<button type="submit" id="field_submit" name="submit" value="search">Search</button>
+			</form>
+			</div>
+	<div id="content">
+		<div id="content_canmore">
+<h1>Advanced Search</h1>
+<!--<h1><a href="/en/advanced/" class="new_search">Start a new search</a></h1>-->
+<form action="/en/advanced/" method="get" id="refine">
+<input type="hidden" name="sitename" value="" />
+<input type="hidden" name="site_type_term" value="" />
+<input type="hidden" name="site_type_code" value="" />
+<input type="hidden" name="archaeology_chk" value="" />
+<input type="hidden" name="architecture_chk" value="" />
+<input type="hidden" name="maritime_chk" value="" />
+<input type="hidden" name="maritime_evidence_code" value="" />
+<input type="hidden" name="numlink" value="" />
+<input type="hidden" name="mapno" value="" />
+<input type="hidden" name="site" value="" />
+<input type="hidden" name="sub" value="" />
+<input type="hidden" name="parish" value="" />
+<input type="hidden" name="council_code" value="" />
+<input type="hidden" name="county_code" value="" />
+<input type="hidden" name="region_code" value="" />
+<input type="hidden" name="district_code" value="" />
+<input type="hidden" name="collection_name" value="" />
+<input type="hidden" name="biblio_surname" value="" />
+<input type="hidden" name="biblio_inits" value="" />
+<input type="hidden" name="biblio_journal" value="" />
+<input type="hidden" name="biblio_title" value="" />
+<input type="hidden" name="biblio_date" value="" />
+<input type="hidden" name="site_discipline" value="" />
+<input type="hidden" name="classmaterial_code1" value="" />
+<input type="hidden" name="classperiod_code1" value="" />
+<input type="hidden" name="site_country" value="1" />
+<input type="hidden" name="locat_xy_radius_m" value="250" />
+<input type="hidden" name="ngr" value="NS5754767442" />
+<input type="hidden" name="image_only_chk" value="1" />
+<p class="topP"><button type="submit" id="ieBugSubmit" name="submit" value="refine">Refine Your Search</button></p>
+<input type="hidden" name="submit" value="refine"/></form><hr />
+<style> 
+#map_image {
+   background: url("../../images/plotresultsonamap.jpg") no-repeat scroll right transparent; 
+   float: center;
+   padding: 0;
+   text-align: left;
+   width: 600px;   
+   margin-right: -8px;
+   margin-top: -10px;
+
+}
+
+table#results {
+
+    border-collapse: collapse;
+    margin: -0px -8px 0;
+    padding: 0;
+    width: 696px;
+}
+</style>
+
+
+<p class="topP"><div><div style='padding:0px 0px;'> Showing <strong>1&ndash;6</strong> of <strong>6</strong> results.</div><div id='map_image' ><p align=left style="padding:10px 0px"> <a href="http://canmoremapping.rcahms.gov.uk/index.php?action=do_advanced&amp;ngr=NS5754767442&amp;locatxyradiusm=250&amp;sitecountry=1&amp;imageonlychk=1&amp;sorttyp=siteNumber&amp;sortord=asc" title = "click to display these results on a map" target="_blank">Display these results on a map</a></p></div></div></p>		<table id="results">
+				<thead>
+					<tr>
+						<th id="siteNumber"class="active"><a href="/en/results/?ngr=NS5754767442&amp;locat_xy_radius_m=250&amp;site_country=1&amp;image_only_chk=1&amp;submit=search&amp;sort_typ=siteNumber&amp;sort_ord=desc">Site Number <img src="/images/descending.gif" alt="sort ascending" /> </a></th><th id="nmrsName"><a href="/en/results/?ngr=NS5754767442&amp;locat_xy_radius_m=250&amp;site_country=1&amp;image_only_chk=1&amp;submit=search&amp;sort_typ=nmrsName&amp;sort_ord=asc">Site Name</a></th><th id="siteType"><a href="/en/results/?ngr=NS5754767442&amp;locat_xy_radius_m=250&amp;site_country=1&amp;image_only_chk=1&amp;submit=search&amp;sort_typ=siteType&amp;sort_ord=asc">Site Type</a></th><th id="council"><a href="/en/results/?ngr=NS5754767442&amp;locat_xy_radius_m=250&amp;site_country=1&amp;image_only_chk=1&amp;submit=search&amp;sort_typ=council&amp;sort_ord=asc">Council</a></th><th id="collectionCount"><a href="/en/results/?ngr=NS5754767442&amp;locat_xy_radius_m=250&amp;site_country=1&amp;image_only_chk=1&amp;submit=search&amp;sort_typ=collectionCount&amp;sort_ord=asc">Collection Items</a></th>					</tr>
+				</thead>
+				
+				<tbody>
+								<tr >
+							<td><a href="/en/site/160711/details/"><span class="list_sitenumber">NS56NE 1159.00</span><div class="list_thumb_container"><img class="list_thumb" src="/images/s/1040578/" alt="Randomly selected site image of Glasgow, 62 Belmont Street, Stevenson Memorial Free Church." /></div></a>								</td>
+							<td>Glasgow, 62 Belmont Street, Stevenson Memorial Free Church&nbsp;<br />
+							<span class="alternative">Alternative(s) </span>99 Garriochmill Road; Kelvin Free Church; Kelvin Stevenson Memorial Church							</td>
+							<td>CHURCH&nbsp;</td><td>GLASGOW, CITY OF&nbsp;</td><td class="related_material_links_td"><div class="collection_items_online"><h4>Online</h4>
+<span>3</span><a href="/en/site/160711/digital_images/">
+Digital images</a><br />
+</div><div class="collection_items_searchroom"><h4 class="search_room_list">Search Room</h4>
+<span>9</span><a href="/en/site/160711/photographs/">
+Photographs</a><br />
+</div><div class="collection_items_public"></div></div>&nbsp;</td>						</tr>
+											<tr class="odd">
+							<td><a href="/en/site/167406/details/"><span class="list_sitenumber">NS56NE 1785</span><div class="list_thumb_container"><img class="list_thumb" src="/images/s/1044666/" alt="Randomly selected site image of Glasgow, 143 Wilton Street." /></div></a>								</td>
+							<td>Glasgow, 143 Wilton Street&nbsp;<br />
+														</td>
+							<td>HOUSE (19TH CENTURY)&nbsp;</td><td>GLASGOW, CITY OF&nbsp;</td><td class="related_material_links_td"><div class="collection_items_online"><h4>Online</h4>
+<span>1</span><a href="/en/site/167406/digital_images/">
+Digital images</a><br />
+</div><div class="collection_items_searchroom"><h4 class="search_room_list">Search Room</h4>
+<span>1</span><a href="/en/site/167406/photographs/">
+Photographs</a><br />
+</div><div class="collection_items_public"></div></div>&nbsp;</td>						</tr>
+											<tr >
+							<td><a href="/en/site/171716/details/"><span class="list_sitenumber">NS56NE 2152</span><div class="list_thumb_container"><img class="list_thumb" src="/images/s/411468/" alt="Randomly selected site image of Glasgow, Belmont Street, Belmont Bridge." /></div></a>								</td>
+							<td>Glasgow, Belmont Street, Belmont Bridge&nbsp;<br />
+							<span class="alternative">Alternative(s) </span>River Kelvin; Garriochmill Road							</td>
+							<td>ROAD BRIDGE&nbsp;</td><td>GLASGOW, CITY OF&nbsp;</td><td class="related_material_links_td"><div class="collection_items_online"><h4>Online</h4>
+<span>4</span><a href="/en/site/171716/digital_images/">
+Digital images</a><br />
+</div><div class="collection_items_searchroom"><h4 class="search_room_list">Search Room</h4>
+</div><div class="collection_items_public"></div></div>&nbsp;</td>						</tr>
+											<tr class="odd">
+							<td><a href="/en/site/165264/details/"><span class="list_sitenumber">NS56NE 216.01</span><div class="list_thumb_container"><img class="list_thumb" src="/images/s/DP098752/" alt="Randomly selected site image of Glasgow, Kelvinside, 1 Kelvinside Gardens, St Charles' Roman Catholic Church, Presbytery." /></div></a>								</td>
+							<td>Glasgow, Kelvinside, 1 Kelvinside Gardens, St Charles' Roman Catholic Church, Presbytery&nbsp;<br />
+							<span class="alternative">Alternative(s) </span>St Charles Presbytery; Kelvinside Gardens East; Roman Catholic Church Of St Charles							</td>
+							<td>PRESBYTERY&nbsp;</td><td>GLASGOW, CITY OF&nbsp;</td><td class="related_material_links_td"><div class="collection_items_online"><h4>Online</h4>
+<span>1</span><a href="/en/site/165264/digital_images/">
+Digital images</a><br />
+</div><div class="collection_items_searchroom"><h4 class="search_room_list">Search Room</h4>
+<span>6</span><a href="/en/site/165264/photographs/">
+Photographs</a><br />
+<span>1</span><a href="/en/site/165264/prints/">Print Room</a><br />
+</div><div class="collection_items_public"></div></div>&nbsp;</td>						</tr>
+											<tr >
+							<td><a href="/en/site/122382/details/"><span class="list_sitenumber">NS56NE 216.00</span><div class="list_thumb_container"><img class="list_thumb" src="/images/s/1044652/" alt="Randomly selected site image of Glasgow, Kelvinside, 9 Kelvinside Gardens, St Charles' Roman Catholic Church." /></div></a>								</td>
+							<td>Glasgow, Kelvinside, 9 Kelvinside Gardens, St Charles' Roman Catholic Church&nbsp;<br />
+							<span class="alternative">Alternative(s) </span>Kelvinside Gardens East; Lyndhurst Gardens Lane; Roman Catholic Church Of St Charles							</td>
+							<td>CHURCH&nbsp;</td><td>GLASGOW, CITY OF&nbsp;</td><td class="related_material_links_td"><div class="collection_items_online"><h4>Online</h4>
+<span>3</span><a href="/en/site/122382/digital_images/">
+Digital images</a><br />
+</div><div class="collection_items_searchroom"><h4 class="search_room_list">Search Room</h4>
+<span>89</span><a href="/en/site/122382/photographs/">
+Photographs</a><br />
+<span>1</span><a href="/en/site/122382/prints/">Print Room</a><br />
+</div><div class="collection_items_public"></div></div>&nbsp;</td>						</tr>
+											<tr class="odd">
+							<td><a href="/en/site/171765/details/"><span class="list_sitenumber">NS56NE 2176</span><div class="list_thumb_container"><img class="list_thumb" src="/images/s/1044645/" alt="Randomly selected site image of Glasgow, 21 Jardine Street, Lanarkshire Regiment Drill Hall." /></div></a>								</td>
+							<td>Glasgow, 21 Jardine Street, Lanarkshire Regiment Drill Hall&nbsp;<br />
+							<span class="alternative">Alternative(s) </span>Garriochmill Road							</td>
+							<td>DRILL HALL&nbsp;</td><td>GLASGOW, CITY OF&nbsp;</td><td class="related_material_links_td"><div class="collection_items_online"><h4>Online</h4>
+<span>1</span><a href="/en/site/171765/digital_images/">
+Digital images</a><br />
+</div><div class="collection_items_searchroom"><h4 class="search_room_list">Search Room</h4>
+</div><div class="collection_items_public"></div></div>&nbsp;</td>						</tr>
+								</tbody>
+		</table>
+		
+
+		</div> <!--end content_canmore-->
+	</div> <!-- end content-->
+	
+	<div id="footer">
+		<h4 class="hidden">Footer Menu Links</h4>
+		<ul><li><a href="http://www.rcahms.gov.uk/contact-us.html" title="Contact Us" >Contact Us</a></li>
+			<li><a href="http://www.rcahms.gov.uk/sitemap.html" title="Site Map" >Search Website</a></li>
+			<li><a href="http://www.rcahms.gov.uk/accessibility.html" title="Accessibility" >Accessibility</a></li>
+			<li><a href="http://www.rcahms.gov.uk/freedom-of-information.html" title="F.O.I." >F.O.I.</a></li>
+			<li><a href="http://canmore.rcahms.gov.uk/cookie/privacy-cookies.php" title="Privacy & Cookies" >Privacy & Cookies</a></li>
+			<li><a href="http://www.rcahms.gov.uk/copyright-and-licence.html" title="Copyright" >Copyright</a></li>
+			<li class="last"><a href="http://www.rcahms.gov.uk/terms-and-conditions.html" class="external" title="View Term and Conditions">Terms and Conditions</a></li>
+		</ul> 
+	</div>
+<div id="subfooter">Charity SC026749</div>  
+</div> <!--end container-->   
+
+		<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+		document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+		</script>
+		<script type="text/javascript">
+		try {
+		var pageTracker = _gat._getTracker("UA-815233-13");
+		pageTracker._trackPageview();
+		} catch(err) {}</script>	
+			
+</body>
+</html>

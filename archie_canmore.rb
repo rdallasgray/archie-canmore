@@ -1,16 +1,13 @@
 require 'rubygems'
 require 'sinatra'
 require 'json'
-require 'httparty'
-require 'silva'
-require 'nokogiri'
-require './request.rb'
+require_relative 'lib/canmore'
 
 get '/' do 
 end
 
-get '/:lat/:long/:rad' do
-  res = Canmore::Request.images_for_location(:lat => params[:lat].to_f, :long => params[:long].to_f, :rad => params[:rad].to_i)
+get '/images_for/:lat/:long/:rad' do
+  res = Canmore::Request.images_for(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
   json = res.to_json
 
   if params[:callback]
