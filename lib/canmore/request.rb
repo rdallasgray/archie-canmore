@@ -36,7 +36,7 @@ module Canmore
       image_detail[:lat], image_detail[:long] = location.lat, location.long
       image_detail[:site_name] = parser.site_name
       image_rels = parser.image_rels
-      image_detail[:thumb_link] = CANMORE_URL + THUMB_URL + image_rels.first
+      image_detail[:thumb_link] = CANMORE_URL + THUMB_URL + image_rels.first + '/'
       image_detail[:no_images] = image_rels.count
       image_detail
     end
