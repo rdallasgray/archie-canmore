@@ -19,26 +19,26 @@ module Canmore
       get_html(SEARCH_URL, params)
     end
 
-    def self.images_for(radius, location)
+    def self.detail_rels_for(radius, location)
       html = search_by_location(radius, location)
       image_details = []
       detail_links = Canmore::Parser::Search.new(html).detail_links
-      detail_links.each {|link| image_details << image_details_for(link)}
-      image_details
+      detail_links.map {|link| link.to_s.match(/site\/([0-9]+)\//)[1]}
     end
 
-    def self.image_details_for(link)
-      image_detail = { :site_link => CANMORE_URL + link }
+    def self.details_for(rel)
+      link = "/en/site/#{rel}/details/"
+      details = { :site_link => CANMORE_URL + link }
       html = get_html(link)
       parser = Canmore::Parser::Detail.new(html)
+      image_rels = parser.image_rels
       ngr = parser.ngr
       location = Silva::Location.from(:gridref, :gridref => ngr).to(:wgs84)
-      image_detail[:lat], image_detail[:long] = location.lat, location.long
-      image_detail[:site_name] = parser.site_name
-      image_rels = parser.image_rels
-      image_detail[:thumb_link] = CANMORE_URL + THUMB_URL + image_rels.first + '/'
-      image_detail[:no_images] = image_rels.count
-      image_detail
+      details[:lat], details[:long] = location.lat, location.long
+      details[:site_name] = parser.site_name
+      details[:thumb_link] = CANMORE_URL + THUMB_URL + image_rels.first + '/'
+      details[:no_images] = image_rels.count
+      details
     end
   end
 end

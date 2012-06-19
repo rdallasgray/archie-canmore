@@ -27,7 +27,7 @@ describe Canmore::Parser::Detail do
       @parser.site_name.must_equal 'Glasgow, Belmont Street, Belmont Bridge'
     end
     it "should find the correct site grid reference" do
-      @parser.ngr .must_equal 'NS5748567283'
+      @parser.ngr.must_equal 'NS5748567283'
     end
     it "should find four image rels" do
       @parser.image_rels.count.must_equal 4

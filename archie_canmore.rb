@@ -6,16 +6,16 @@ require_relative 'lib/canmore'
 get '/' do 
 end
 
-get '/images_for/:lat/:long/:rad' do
-  res = Canmore::Request.images_for(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
-  json = res.to_json
+get '/detail_rels_for/:lat/:long/:rad' do
+  res = Canmore::Request.detail_rels_for(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
+  
+  content_type 'text/javascript'
+  "#{params[:callback]}(#{res.to_json});"
+end
 
-  if params[:callback]
-    json = "#{params[:callback]}(#{json});"
-    content_type 'text/javascript'
-  else
-    content_type 'json'
-  end
-
-  json
+get '/details_for/:rel' do
+  res = Canmore::Request.details_for params[:rel]
+  
+  content_type 'text/javascript'
+  "#{params[:callback]}(#{res.to_json});"
 end
