@@ -23,7 +23,8 @@ module Canmore
       html = search_by_location(radius, location)
       image_details = []
       detail_links = Canmore::Parser::Search.new(html).detail_links
-      detail_links.map {|link| link.to_s.match(/site\/([0-9]{6})\//)[1]}
+      six_digit_rel = /site\/([0-9]{6})\//
+      detail_links.select {|link| link.match(six_digit_rel)}.map {|link| link.match(six_digit_rel)[0]}
     end
 
     def self.details_for(rel)
