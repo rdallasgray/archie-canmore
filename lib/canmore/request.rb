@@ -1,4 +1,4 @@
-require 'HTTParty'
+require 'httparty'
 require 'silva'
 require_relative 'parser'
 
