@@ -15,19 +15,19 @@ module Canmore
     end
 
     ##
-    # Return an array of six- or seven-digit numbers which can be used to find individual site records on Canmore,
+    # Return an array of six-digit numbers which can be used to find individual site records on Canmore,
     # given a lat/long location and a radius in which to search.
     #
     def detail_rels_for(radius, location)
       html = search_by_location(radius, location)
       image_details = []
       detail_links = Canmore::Parser::Search.new(html).detail_links
-      six_or_seven_digits = /site\/([0-9]{6,7})\//
-      detail_links.select {|link| link.to_s =~ six_or_seven_digits}.map {|link| link.to_s.match(six_or_seven_digits)[1]}
+      six_digits = /site\/([0-9]{6})\//
+      detail_links.select {|link| link.to_s =~ six_digits}.map {|link| link.to_s.match(six_digits)[1]}
     end
 
     ##
-    # Return a hash of details on a given site, given a six/seven-digit rel to search on.
+    # Return a hash of details on a given site, given a six-digit rel to search on.
     #
     def details_for(rel)
       link = DETAIL_URL.sub(/:rel/, rel)
