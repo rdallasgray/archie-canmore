@@ -1,0 +1,28 @@
+fs = require 'fs'
+{exec} = require 'child_process'
+
+srcDir = "src/"
+buildDir = "lib/"
+
+srcFiles =[
+  "prelude",
+  "architect",
+  "main",
+  "appendix"
+]
+
+files = (srcDir + file for file in srcFiles)
+buildName = "architect-build.js"
+minName = "architect-min.js"
+
+task "build:compile", "compile and join source files", ->
+  exec "coffee --join #{buildDir + buildName} --compile #{files.join ' '}", (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+
+task "build:min", "minify build file", ->
+  invoke "build:compile"
+  exec "uglifyjs -o #{buildDir + minName} #{buildDir + buildName}", (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+  
