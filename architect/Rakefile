@@ -1,0 +1,43 @@
+begin
+  require 'jasmine'
+  load 'jasmine/tasks/jasmine.rake'
+rescue LoadError
+  task :jasmine do
+    abort "Jasmine is not available. In order to run jasmine, you must: (sudo) gem install jasmine"
+  end
+end
+
+srcDir = "src/"
+buildDir = "lib/"
+minDir = "../public/javascripts/"
+
+srcFiles =[
+  "architect",
+  "main"
+]
+
+tasksRun = []
+
+files = srcFiles.map {|f| srcDir + f}
+buildName = "architect-build.js"
+minName = "architect-min.js"
+
+task :clean => [:compile] do
+  return if tasksRun.include? :clean
+  sh "rm #{buildDir + buildName}"
+  tasksRun.push :clean
+end
+
+task :compile do
+  return if tasksRun.include? :compile
+  sh "coffee --join #{buildDir + buildName} --compile #{files.join ' '}"
+  tasksRun.push :compile
+end
+
+task :min => [:compile] do
+  return if tasksRun.include? :min
+  sh "uglifyjs -o #{minDir + minName} #{buildDir + buildName}"
+  tasksRun.push :min
+end
+
+task :release => [:compile, :min, :clean]

@@ -25,7 +25,7 @@
     Architect.prototype.OFFSET_Y_RANDOM_FACTOR = 3;
 
     function Architect(canmoreRequestUrl) {
-      this.canmoreRequestUrl = canmoreRequestUrl || Architect.CANMORE_REQUEST_URL;
+      this.canmoreRequestUrl = canmoreRequestUrl || this.CANMORE_REQUEST_URL;
       this.lastLocation = new AR.GeoLocation(0, 0, 0);
       this.currentLocation = new AR.GeoLocation(0, 0, 0);
       this.geoObjects = {};
@@ -48,7 +48,7 @@
     Architect.prototype.locationChanged = function(lat, long, alt, acc) {
       this.log("changing location to " + [lat, long].join(", "));
       this.setLocation(this.currentLocation, lat, long, alt);
-      if (this.currentLocation.distanceTo(this.lastLocation) > this.RADIUS / 2) {
+      if (this.currentLocation.distanceTo(this.lastLocation) > this.RADIUS / 5) {
         this.setLastLocation(this.currentLocation);
         return this.updateImages();
       }
@@ -115,7 +115,7 @@
       return delete this.geoObjects[id];
     };
 
-    Architect.prototype.createARImage = function(item) {
+    Architect.prototype.createGeoObject = function(item) {
       var _this = this;
       if (!this.geoObjects[item]) {
         return this.serverRequest("details_for/", [item], function(item_details) {
@@ -174,7 +174,7 @@
         _results = [];
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           item = items[_i];
-          _results.push(_this.createARImage(item));
+          _results.push(_this.createGeoObject(item));
         }
         return _results;
       });

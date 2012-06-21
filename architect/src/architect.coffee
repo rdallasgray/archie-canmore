@@ -12,7 +12,7 @@ class Architect
   OFFSET_Y_RANDOM_FACTOR: 3
 
   constructor: (canmoreRequestUrl) ->
-    @canmoreRequestUrl = canmoreRequestUrl || Architect.CANMORE_REQUEST_URL
+    @canmoreRequestUrl = canmoreRequestUrl || @CANMORE_REQUEST_URL
     @lastLocation = new AR.GeoLocation(0, 0, 0)
     @currentLocation = new AR.GeoLocation(0, 0, 0)
     @geoObjects = {}
@@ -30,7 +30,7 @@ class Architect
   locationChanged: (lat, long, alt, acc) ->
     @log "changing location to " + [lat, long].join ", "
     @setLocation(@currentLocation, lat, long, alt)
-    if @currentLocation.distanceTo(@lastLocation) > @RADIUS / 2
+    if @currentLocation.distanceTo(@lastLocation) > @RADIUS / 5
       @setLastLocation @currentLocation
       @updateImages()
 
@@ -68,7 +68,7 @@ class Architect
     geo.destroy()
     delete @geoObjects[id]
 
-  createARImage: (item) ->
+  createGeoObject: (item) ->
     if not @geoObjects[item]
       @serverRequest "details_for/", [item], (item_details) =>
         location = new AR.GeoLocation item_details.lat, item_details.long, @currentLocation.altitude
@@ -104,7 +104,7 @@ class Architect
     @serverRequest "detail_rels_for/", [loc.latitude, loc.longitude, @RADIUS], (items) =>
       @log "Found #{items.length} images"
       for item in items
-        @createARImage item
+        @createGeoObject item
 
 root.Canmore =
   Architect: Architect

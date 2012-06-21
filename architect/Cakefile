@@ -1,0 +1,45 @@
+fs = require 'fs'
+{exec} = require 'child_process'
+
+srcDir = "src/"
+buildDir = "lib/"
+minDir = "../public/javascripts/"
+
+srcFiles =[
+  "architect",
+  "main"
+]
+
+tasksRun = []
+
+files = (srcDir + file for file in srcFiles)
+buildName = "architect-build.js"
+minName = "architect-min.js"
+
+task "build:clean", "delete interim build file", ->
+  return if "build:clean" in tasksRun
+  exec "rm #{buildDir + buildName}", (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+  tasksRun.push "build:clean"    
+
+task "build:compile", "compile and join source files", ->
+  return if "build:compile" in tasksRun
+  exec "coffee --join #{buildDir + buildName} --compile #{files.join ' '}", (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+  tasksRun.push "build:compile"
+
+task "build:min", "minify build file", ->
+  return if "build:min" in tasksRun
+  invoke "build:compile"
+  exec "uglifyjs -o #{minDir + minName} #{buildDir + buildName}", (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+  tasksRun.push "build:min"    
+
+task "build:all", "compile, minify and remove interim files", ->
+  invoke "build:compile"
+  invoke "build:min"
+  invoke "build:clean"
+
