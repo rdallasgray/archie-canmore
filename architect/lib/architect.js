@@ -170,7 +170,7 @@
 
     Architect.prototype.getImagesForLocation = function(loc, func) {
       var _this = this;
-      this.log("Loading images ...");
+      this.log("Finding images ...");
       return this.serverRequest("site_ids_for_location/", [loc.latitude, loc.longitude, this.RADIUS], function(items) {
         var item, _i, _len, _results;
         _this.log("Found " + items.length + " images");

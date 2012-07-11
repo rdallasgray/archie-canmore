@@ -102,7 +102,7 @@ class Architect
     $.getJSON requestUrl, (data) -> callback(data)
           
   getImagesForLocation: (loc, func) ->
-    @log "Loading images ..."
+    @log "Finding images ..."
     @serverRequest "site_ids_for_location/", [loc.latitude, loc.longitude, @RADIUS], (items) =>
       @log "Found #{items.length} images"
       for item in items
