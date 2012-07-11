@@ -68,19 +68,19 @@ class Architect
     geo.destroy()
     delete @geoObjects[id]
 
-  createGeoObject: (item) ->
-    if not @geoObjects[item]
-      @serverRequest "details_for_site_id/", [item], (item_details) =>
-        location = new AR.GeoLocation item_details.lat, item_details.long, @currentLocation.altitude
+  createGeoObject: (siteId) ->
+    if not @geoObjects[siteId]
+      @serverRequest "details_for_site_id/", [siteId], (siteDetails) =>
+        location = new AR.GeoLocation siteDetails.lat, siteDetails.long, @currentLocation.altitude
         distance = @currentLocation.distanceTo location
         drawableOptions = 
           offsetY: (Math.random() * @OFFSET_Y_RANDOM_FACTOR) - @OFFSET_Y_RANDOM_FACTOR / 2
           enabled: true
-        @geoObjects[item] = new AR.GeoObject location, enabled: false
-        imgRes = @createImageResource(item_details.thumb_link, @geoObjects[item])
+        @geoObjects[siteId] = new AR.GeoObject location, enabled: false
+        imgRes = @createImageResource(siteDetails.images[0], @geoObjects[siteId])
         drawable = @createImageDrawable imgRes, drawableOptions
         @setOpacityAndScaleOnDrawable drawable, distance
-        @geoObjects[item].drawables.addCamDrawable drawable
+        @geoObjects[siteId].drawables.addCamDrawable drawable
 
   createImageResource: (uri, geoObject) ->
     imgRes = new AR.ImageResource uri,
@@ -97,7 +97,9 @@ class Architect
 
   serverRequest: (url, params, callback) ->
     params ||= []
-    $.getJSON @canmoreRequestUrl + url + params.join('/') + '?callback=?', (data) -> callback(data)
+    requestUrl = @canmoreRequestUrl + url + params.join('/') + '?callback=?'
+    @log "Request url is #{requestUrl}"
+    $.getJSON requestUrl, (data) -> callback(data)
           
   getImagesForLocation: (loc, func) ->
     @log "Loading images ..."

@@ -115,24 +115,24 @@
       return delete this.geoObjects[id];
     };
 
-    Architect.prototype.createGeoObject = function(item) {
+    Architect.prototype.createGeoObject = function(siteId) {
       var _this = this;
-      if (!this.geoObjects[item]) {
-        return this.serverRequest("details_for_site_id/", [item], function(item_details) {
+      if (!this.geoObjects[siteId]) {
+        return this.serverRequest("details_for_site_id/", [siteId], function(siteDetails) {
           var distance, drawable, drawableOptions, imgRes, location;
-          location = new AR.GeoLocation(item_details.lat, item_details.long, _this.currentLocation.altitude);
+          location = new AR.GeoLocation(siteDetails.lat, siteDetails.long, _this.currentLocation.altitude);
           distance = _this.currentLocation.distanceTo(location);
           drawableOptions = {
             offsetY: (Math.random() * _this.OFFSET_Y_RANDOM_FACTOR) - _this.OFFSET_Y_RANDOM_FACTOR / 2,
             enabled: true
           };
-          _this.geoObjects[item] = new AR.GeoObject(location, {
+          _this.geoObjects[siteId] = new AR.GeoObject(location, {
             enabled: false
           });
-          imgRes = _this.createImageResource(item_details.thumb_link, _this.geoObjects[item]);
+          imgRes = _this.createImageResource(siteDetails.images[0], _this.geoObjects[siteId]);
           drawable = _this.createImageDrawable(imgRes, drawableOptions);
           _this.setOpacityAndScaleOnDrawable(drawable, distance);
-          return _this.geoObjects[item].drawables.addCamDrawable(drawable);
+          return _this.geoObjects[siteId].drawables.addCamDrawable(drawable);
         });
       }
     };
@@ -159,8 +159,11 @@
     };
 
     Architect.prototype.serverRequest = function(url, params, callback) {
+      var requestUrl;
       params || (params = []);
-      return $.getJSON(this.canmoreRequestUrl + url + params.join('/') + '?callback=?', function(data) {
+      requestUrl = this.canmoreRequestUrl + url + params.join('/') + '?callback=?';
+      this.log("Request url is " + requestUrl);
+      return $.getJSON(requestUrl, function(data) {
         return callback(data);
       });
     };

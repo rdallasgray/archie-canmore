@@ -52,6 +52,7 @@ module Canmore
     private
 
     def get_html(url, params = nil)
+      puts "getting url #{url} with params #{params.to_s}"
       response = @client.get(CANMORE_URL + url, :query => params)
       response.body
     end
