@@ -9,7 +9,7 @@ window.$ = ->
   html:(msg) -> console.log msg
 
 window.$.getJSON = (url, func) ->
-  if /details_for/.test url then data = mockDetails
+  if /details_for_site_id/.test url then data = mockDetails
   else data = mockRels
   func(data)
 
