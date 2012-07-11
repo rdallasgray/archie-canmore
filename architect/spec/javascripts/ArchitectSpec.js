@@ -20,7 +20,7 @@
 
   window.$.getJSON = function(url, func) {
     var data;
-    if (/details_for/.test(url)) {
+    if (/details_for_site_id/.test(url)) {
       data = mockDetails;
     } else {
       data = mockRels;
