@@ -33,7 +33,9 @@
     }
 
     Architect.prototype.log = function(msg) {
-      return $("#status").html("<p>" + msg + "</p>");
+      var html;
+      html = $("#status").html();
+      return $("#status").html(html + ("<p>" + msg + "</p>"));
     };
 
     Architect.prototype.setLocation = function(loc, lat, long, alt) {
@@ -129,7 +131,7 @@
           _this.geoObjects[siteId] = new AR.GeoObject(location, {
             enabled: false
           });
-          imgRes = _this.createImageResource(siteDetails.images[0], _this.geoObjects[siteId]);
+          imgRes = _this.createImageResource(siteDetails.thumbs[0], _this.geoObjects[siteId]);
           drawable = _this.createImageDrawable(imgRes, drawableOptions);
           _this.setOpacityAndScaleOnDrawable(drawable, distance);
           return _this.geoObjects[siteId].drawables.addCamDrawable(drawable);
@@ -162,7 +164,6 @@
       var requestUrl;
       params || (params = []);
       requestUrl = this.canmoreRequestUrl + url + params.join('/') + '?callback=?';
-      this.log("Request url is " + requestUrl);
       return $.getJSON(requestUrl, function(data) {
         return callback(data);
       });
@@ -170,7 +171,6 @@
 
     Architect.prototype.getImagesForLocation = function(loc, func) {
       var _this = this;
-      this.log("Finding images ...");
       return this.serverRequest("site_ids_for_location/", [loc.latitude, loc.longitude, this.RADIUS], function(items) {
         var item, _i, _len, _results;
         _this.log("Found " + items.length + " images");

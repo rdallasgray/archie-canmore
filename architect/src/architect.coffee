@@ -19,7 +19,8 @@ class Architect
     @ARLoggerActivated = false
     
   log:(msg) ->
-    $("#status").html "<p>#{msg}</p>"
+    html = $("#status").html()
+    $("#status").html html + "<p>#{msg}</p>"
 
   setLocation: (loc, lat, long, alt) ->
     [loc.latitude, loc.longitude, loc.altitude] = [lat, long, alt]
@@ -77,7 +78,7 @@ class Architect
           offsetY: (Math.random() * @OFFSET_Y_RANDOM_FACTOR) - @OFFSET_Y_RANDOM_FACTOR / 2
           enabled: true
         @geoObjects[siteId] = new AR.GeoObject location, enabled: false
-        imgRes = @createImageResource(siteDetails.images[0], @geoObjects[siteId])
+        imgRes = @createImageResource(siteDetails.thumbs[0], @geoObjects[siteId])
         drawable = @createImageDrawable imgRes, drawableOptions
         @setOpacityAndScaleOnDrawable drawable, distance
         @geoObjects[siteId].drawables.addCamDrawable drawable
@@ -98,11 +99,9 @@ class Architect
   serverRequest: (url, params, callback) ->
     params ||= []
     requestUrl = @canmoreRequestUrl + url + params.join('/') + '?callback=?'
-    @log "Request url is #{requestUrl}"
     $.getJSON requestUrl, (data) -> callback(data)
           
   getImagesForLocation: (loc, func) ->
-    @log "Finding images ..."
     @serverRequest "site_ids_for_location/", [loc.latitude, loc.longitude, @RADIUS], (items) =>
       @log "Found #{items.length} images"
       for item in items
