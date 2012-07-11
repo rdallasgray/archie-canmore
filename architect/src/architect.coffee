@@ -70,7 +70,7 @@ class Architect
 
   createGeoObject: (item) ->
     if not @geoObjects[item]
-      @serverRequest "details_for/", [item], (item_details) =>
+      @serverRequest "details_for_site_id/", [item], (item_details) =>
         location = new AR.GeoLocation item_details.lat, item_details.long, @currentLocation.altitude
         distance = @currentLocation.distanceTo location
         drawableOptions = 
@@ -101,10 +101,11 @@ class Architect
           
   getImagesForLocation: (loc, func) ->
     @log "Loading images ..."
-    @serverRequest "detail_rels_for/", [loc.latitude, loc.longitude, @RADIUS], (items) =>
+    @serverRequest "site_ids_for_location/", [loc.latitude, loc.longitude, @RADIUS], (items) =>
       @log "Found #{items.length} images"
       for item in items
         @createGeoObject item
+
 
 root.Canmore =
   Architect: Architect

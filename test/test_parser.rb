@@ -13,6 +13,9 @@ describe Canmore::Parser::Search do
     it "should find six detail links" do
       @parser.detail_links.count.must_equal 6
     end
+    it "should find six thumbnails" do
+      @parser.thumb_links.count.must_equal 6
+    end
   end
 end
 
@@ -29,8 +32,8 @@ describe Canmore::Parser::Detail do
     it "should find the correct site grid reference" do
       @parser.ngr.must_equal 'NS5748567283'
     end
-    it "should find four image rels" do
-      @parser.image_rels.count.must_equal 4
+    it "should find four image ids" do
+      @parser.image_ids.count.must_equal 4
     end
   end
 end

@@ -18,9 +18,9 @@ get '/dev/css/:file' do
   send_file File.expand_path(params[:file], 'public/stylesheets/')
 end
 
-get '/detail_rels_for/:lat/:long/:rad' do
+get '/site_ids_for_location/:lat/:long/:rad' do
   begin
-    res = Canmore::Request.new().detail_rels_for(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
+    res = Canmore::Request.new().site_ids_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
   rescue
     res = []
   end
@@ -28,9 +28,19 @@ get '/detail_rels_for/:lat/:long/:rad' do
     "#{params[:callback]}(#{res.to_json});"
 end
 
-get '/details_for/:rel' do
+get '/thumb_links_for_location/:lat/:long/:rad' do
   begin
-    res = Canmore::Request.new().details_for params[:rel]
+    res = Canmore::Request.new().thumb_links_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
+#  rescue
+#    res = []
+  end
+    content_type 'text/javascript'
+    "#{params[:callback]}(#{res.to_json});"
+end
+
+get '/details_for_site_id/:id' do
+  begin
+    res = Canmore::Request.new().details_for_site_id params[:id]
   rescue
     res = []
   end

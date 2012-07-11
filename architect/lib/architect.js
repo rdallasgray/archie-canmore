@@ -118,7 +118,7 @@
     Architect.prototype.createGeoObject = function(item) {
       var _this = this;
       if (!this.geoObjects[item]) {
-        return this.serverRequest("details_for/", [item], function(item_details) {
+        return this.serverRequest("details_for_site_id/", [item], function(item_details) {
           var distance, drawable, drawableOptions, imgRes, location;
           location = new AR.GeoLocation(item_details.lat, item_details.long, _this.currentLocation.altitude);
           distance = _this.currentLocation.distanceTo(location);
@@ -168,7 +168,7 @@
     Architect.prototype.getImagesForLocation = function(loc, func) {
       var _this = this;
       this.log("Loading images ...");
-      return this.serverRequest("detail_rels_for/", [loc.latitude, loc.longitude, this.RADIUS], function(items) {
+      return this.serverRequest("site_ids_for_location/", [loc.latitude, loc.longitude, this.RADIUS], function(items) {
         var item, _i, _len, _results;
         _this.log("Found " + items.length + " images");
         _results = [];
