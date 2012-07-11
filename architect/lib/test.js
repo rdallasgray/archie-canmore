@@ -2,7 +2,7 @@
 (function() {
   var changeLocation, lat, long, timesToChange;
 
-  Canmore.archie = new Canmore.Architect("http://localhost:4567/");
+  Canmore.archie = new Canmore.Architect;
 
   $(function() {
     return AR.context.onLocationChanged = function(lat, long, alt, acc) {

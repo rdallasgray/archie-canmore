@@ -1,4 +1,4 @@
-Canmore.archie = new Canmore.Architect("http://localhost:4567/")
+Canmore.archie = new Canmore.Architect
 $ -> AR.context.onLocationChanged = (lat, long, alt, acc) -> Canmore.archie.locationChanged(lat, long, alt, acc)
 
 lat = 55.8891
