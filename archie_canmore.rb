@@ -21,7 +21,8 @@ end
 get '/site_ids_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().site_ids_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
-  rescue
+  rescue => error
+    puts "Error: #{error.to_s}"
     res = []
   end
     content_type 'text/javascript'
@@ -31,8 +32,9 @@ end
 get '/thumb_links_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().thumb_links_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
-#  rescue
-#    res = []
+  rescue => error
+    puts "Error: #{error.to_s}"
+    res = []
   end
     content_type 'text/javascript'
     "#{params[:callback]}(#{res.to_json});"
@@ -41,7 +43,8 @@ end
 get '/details_for_site_id/:id' do
   begin
     res = Canmore::Request.new().details_for_site_id params[:id]
-  rescue
+  rescue => error
+    puts "Error: #{error.to_s}"
     res = []
   end
     content_type 'text/javascript'

@@ -14,7 +14,7 @@
 
     Architect.prototype.LONG_METERS = 70000;
 
-    Architect.prototype.RADIUS = 500;
+    Architect.prototype.RADIUS = 250;
 
     Architect.prototype.DEFAULT_HEIGHT_SDU = 4.5;
 
@@ -28,14 +28,14 @@
       this.canmoreRequestUrl = canmoreRequestUrl || this.CANMORE_REQUEST_URL;
       this.lastLocation = new AR.GeoLocation(0, 0, 0);
       this.currentLocation = new AR.GeoLocation(0, 0, 0);
-      this.geoObjects = {};
-      this.ARLoggerActivated = false;
+      this.photoGeoObjects = {};
+      this.placemarkGeoObjects = {};
+      this.locationChangedFunc = null;
+      this.mode = null;
     }
 
     Architect.prototype.log = function(msg) {
-      var html;
-      html = $("#status").html();
-      return $("#status").html(html + ("<p>" + msg + "</p>"));
+      return $("#status").html("<p>" + msg + "</p>");
     };
 
     Architect.prototype.setLocation = function(loc, lat, long, alt) {
@@ -50,21 +50,65 @@
     Architect.prototype.locationChanged = function(lat, long, alt, acc) {
       this.log("changing location to " + [lat, long].join(", "));
       this.setLocation(this.currentLocation, lat, long, alt);
-      if (this.currentLocation.distanceTo(this.lastLocation) > this.RADIUS / 5) {
-        this.setLastLocation(this.currentLocation);
-        return this.updateImages();
+      if (this.locationChangedFunc !== null) {
+        return this.locationChangedFunc();
       }
     };
 
-    Architect.prototype.updateImages = function() {
-      this.cleanUpImages();
-      return this.getImagesForLocation(this.currentLocation);
+    Architect.prototype.setMode = function(mode, data) {
+      if (data == null) {
+        data = null;
+      }
+      this.log("setting mode " + mode);
+      if (mode === this.mode) {
+        return;
+      }
+      if (mode === 'photo') {
+        return this.setupPhotoMode();
+      } else {
+        return this.setupPlacemarkMode(data);
+      }
     };
 
-    Architect.prototype.cleanUpImages = function() {
+    Architect.prototype.setupPhotoMode = function() {
+      this.locationChangedFunc = null;
+      this.mode = 'photo';
+      this.disablePlacemarks;
+      this.cleanUpPhotos;
+      this.enablePhotos;
+      return this.locationChangedFunc = this.maybeUpdatePhotos;
+    };
+
+    Architect.prototype.maybeUpdatePhotos = function() {
+      this.log("conditionally updating photos");
+      if (this.currentLocation.distanceTo(this.lastLocation) > this.RADIUS / 5) {
+        this.setLastLocation(this.currentLocation);
+        this.cleanUpPhotos;
+        return this.updatePhotos();
+      }
+    };
+
+    Architect.prototype.enablePhotos = function() {
+      var id, photo, _ref, _results;
+      this.log("enabling photos");
+      _ref = this.photoGeoObjects;
+      _results = [];
+      for (id in _ref) {
+        photo = _ref[id];
+        _results.push(photo.enabled = true);
+      }
+      return _results;
+    };
+
+    Architect.prototype.updatePhotos = function() {
+      this.log("updating photos");
+      return this.getPhotosForLocation(this.currentLocation);
+    };
+
+    Architect.prototype.cleanUpPhotos = function() {
       var distance, drawable, id, item, _ref, _results;
-      this.log("Cleaning up images");
-      _ref = this.geoObjects;
+      this.log("Cleaning up photos");
+      _ref = this.photoGeoObjects;
       _results = [];
       for (id in _ref) {
         item = _ref[id];
@@ -72,7 +116,7 @@
         this.log("Object " + id + " is " + distance + "m away");
         if (distance > this.RADIUS / 2) {
           this.log("Destroying object " + id);
-          _results.push(this.destroyGeoObject(id));
+          _results.push(this.destroyGeoObject('photo', id));
         } else {
           this.log("Resetting opacity and scale on object " + id);
           _results.push((function() {
@@ -90,6 +134,125 @@
       return _results;
     };
 
+    Architect.prototype.createPhotoGeoObject = function(siteId) {
+      var _this = this;
+      this.log("creating photoGeoObject for id " + siteId);
+      if (!this.photoGeoObjects[siteId]) {
+        return this.serverRequest("details_for_site_id/", [siteId], function(siteDetails) {
+          var location;
+          _this.log("creating geoObject with loc " + siteDetails.lat + ", " + siteDetails.long + ": " + siteDetails.thumbs[0]);
+          location = {
+            lat: siteDetails.lat,
+            long: siteDetails.long,
+            alt: _this.currentLocation.altitude
+          };
+          return _this.createGeoObject(location, siteDetails.thumbs[0], siteId, 'photoGeoObjects');
+        });
+      }
+    };
+
+    Architect.prototype.getPhotosForLocation = function(loc) {
+      var _this = this;
+      this.log("getting photos for location " + loc.latitude + ", " + loc.longitude);
+      return this.serverRequest("site_ids_for_location/", [loc.latitude, loc.longitude, this.RADIUS], function(siteIds) {
+        var id, _i, _len, _results;
+        _this.log("Found " + siteIds.length + " images");
+        _results = [];
+        for (_i = 0, _len = siteIds.length; _i < _len; _i++) {
+          id = siteIds[_i];
+          _results.push(_this.createPhotoGeoObject(id));
+        }
+        return _results;
+      });
+    };
+
+    Architect.prototype.setupPlacemarkMode = function(data) {
+      this.locationChangedFunc = null;
+      this.mode = 'placemark';
+      if (data !== null) {
+        this.recreatePlacemarksWithData(data);
+      } else {
+        this.enablePlacemarks;
+      }
+      return this.locationChangedFunc = this.maybeUpdatePlacemarks;
+    };
+
+    Architect.prototype.recreatePlacemarksWithData = function(data) {
+      var details, id, _results;
+      this.destroyPlacemarks;
+      _results = [];
+      for (id in data) {
+        details = data[id];
+        _results.push(this.createGeoObject(details.location, details.imgUri, id, 'placemarkGeoObjects'));
+      }
+      return _results;
+    };
+
+    Architect.prototype.destroyPlacemarks = function() {
+      var id, placemark, _ref, _results;
+      _ref = this.placemarkGeoObjects;
+      _results = [];
+      for (id in _ref) {
+        placemark = _ref[id];
+        _results.push(destroyGeoObject('placemark', id));
+      }
+      return _results;
+    };
+
+    Architect.prototype.enablePlacemarks = function() {
+      var id, placemark, _ref, _results;
+      _ref = this.placemarkGeoObjects;
+      _results = [];
+      for (id in _ref) {
+        placemark = _ref[id];
+        _results.push(placemark.enabled = true);
+      }
+      return _results;
+    };
+
+    Architect.prototype.disablePlacemarks = function() {
+      var id, placemark, _ref, _results;
+      _ref = this.placemarkGeoObjects;
+      _results = [];
+      for (id in _ref) {
+        placemark = _ref[id];
+        _results.push(placemark.enabled = false);
+      }
+      return _results;
+    };
+
+    Architect.prototype.maybeUpdatePlacemarks = function() {
+      this.log("conditionally updating placemarks");
+      if (this.currentLocation.distanceTo(this.lastLocation) > this.RADIUS / 5) {
+        this.setLastLocation(this.currentLocation);
+        return this.updatePlacemarks;
+      }
+    };
+
+    Architect.prototype.updatePlacemarks = function() {
+      var distance, drawable, id, placemark, _ref, _results;
+      this.log("updating placemarks");
+      _ref = this.placemarkGeoObjects;
+      _results = [];
+      for (id in _ref) {
+        placemark = _ref[id];
+        distance = this.currentLocation.distanceTo(placemark.locations[0]);
+        this.log("Object " + id + " is " + distance + "m away");
+        this.log("Resetting opacity and scale on object " + id);
+        _results.push((function() {
+          var _i, _len, _ref1, _results1;
+          _ref1 = placemark.drawables.cam;
+          _results1 = [];
+          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+            drawable = _ref1[_i];
+            _results1.push(this.setOpacityAndScaleOnDrawable(drawable, distance));
+          }
+          return _results1;
+        }).call(this));
+      }
+      return _results;
+    };
+
     Architect.prototype.setOpacityAndScaleOnDrawable = function(drawable, distance) {
       var opacity, scale, scalingFactor;
       scalingFactor = this.MIN_SCALING_DISTANCE / (distance / this.DISTANCE_SCALE_FACTOR);
@@ -99,9 +262,13 @@
       return drawable.opacity = opacity;
     };
 
-    Architect.prototype.destroyGeoObject = function(id) {
-      var drawable, geo, location, _i, _j, _len, _len1, _ref, _ref1;
-      geo = this.geoObjects[id];
+    Architect.prototype.destroyGeoObject = function(type, id) {
+      var collection, drawable, geo, location, _i, _j, _len, _len1, _ref, _ref1;
+      if (type == null) {
+        type = 'photo';
+      }
+      collection = this["" + type + "GeoObjects"];
+      geo = collection[id];
       _ref = geo.drawables.cam;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         drawable = _ref[_i];
@@ -114,41 +281,48 @@
         location.destroy();
       }
       geo.destroy();
-      return delete this.geoObjects[id];
+      return delete collection[id];
     };
 
-    Architect.prototype.createGeoObject = function(siteId) {
-      var _this = this;
-      if (!this.geoObjects[siteId]) {
-        return this.serverRequest("details_for_site_id/", [siteId], function(siteDetails) {
-          var distance, drawable, drawableOptions, imgRes, location;
-          location = new AR.GeoLocation(siteDetails.lat, siteDetails.long, _this.currentLocation.altitude);
-          distance = _this.currentLocation.distanceTo(location);
-          drawableOptions = {
-            offsetY: (Math.random() * _this.OFFSET_Y_RANDOM_FACTOR) - _this.OFFSET_Y_RANDOM_FACTOR / 2,
-            enabled: true
-          };
-          _this.geoObjects[siteId] = new AR.GeoObject(location, {
-            enabled: false
-          });
-          imgRes = _this.createImageResource(siteDetails.thumbs[0], _this.geoObjects[siteId]);
-          drawable = _this.createImageDrawable(imgRes, drawableOptions);
-          _this.setOpacityAndScaleOnDrawable(drawable, distance);
-          return _this.geoObjects[siteId].drawables.addCamDrawable(drawable);
-        });
-      }
+    Architect.prototype.createGeoObject = function(location, imgUri, id, collectionName) {
+      var collection, distance, drawable, drawableOptions, geoObject, imgRes,
+        _this = this;
+      this.log("creating geoObject " + id + " in collection " + collectionName);
+      collection = this[collectionName];
+      location = new AR.GeoLocation(location.lat, location.long, location.alt);
+      distance = this.currentLocation.distanceTo(location);
+      drawableOptions = {
+        offsetY: (Math.random() * this.OFFSET_Y_RANDOM_FACTOR) - this.OFFSET_Y_RANDOM_FACTOR / 2,
+        enabled: true
+      };
+      geoObject = new AR.GeoObject(location, {
+        enabled: false
+      });
+      imgRes = this.createImageResource(imgUri, geoObject);
+      drawable = this.createImageDrawable(imgRes, drawableOptions);
+      drawable.triggers.onClick = function() {
+        return _this.objectWasClicked(id, collectionName);
+      };
+      this.setOpacityAndScaleOnDrawable(drawable, distance);
+      geoObject.drawables.addCamDrawable(drawable);
+      return collection[id] = geoObject;
+    };
+
+    Architect.prototype.objectWasClicked = function(id, collection) {
+      return this.log("clicked " + id + ", " + collection);
     };
 
     Architect.prototype.createImageResource = function(uri, geoObject) {
       var imgRes,
         _this = this;
+      this.log("creating imageResource for " + uri);
       imgRes = new AR.ImageResource(uri, {
         onError: function() {
           return _this.log("Error loading image " + uri);
         },
         onLoaded: function() {
-          _this.log("Loaded image " + uri);
           if (!(imgRes.getHeight() === 109 && imgRes.getWidth() === 109)) {
+            _this.log("Loaded image " + uri);
             return geoObject.enabled = true;
           }
         }
@@ -166,20 +340,6 @@
       requestUrl = this.canmoreRequestUrl + url + params.join('/') + '?callback=?';
       return $.getJSON(requestUrl, function(data) {
         return callback(data);
-      });
-    };
-
-    Architect.prototype.getImagesForLocation = function(loc, func) {
-      var _this = this;
-      return this.serverRequest("site_ids_for_location/", [loc.latitude, loc.longitude, this.RADIUS], function(items) {
-        var item, _i, _len, _results;
-        _this.log("Found " + items.length + " images");
-        _results = [];
-        for (_i = 0, _len = items.length; _i < _len; _i++) {
-          item = items[_i];
-          _results.push(_this.createGeoObject(item));
-        }
-        return _results;
       });
     };
 

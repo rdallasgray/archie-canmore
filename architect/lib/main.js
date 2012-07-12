@@ -7,6 +7,6 @@
     return Canmore.archie.locationChanged(lat, long, alt, acc);
   };
 
-  $("#status").html("<p>TEST</p>");
+  Canmore.archie.setMode('photo');
 
 }).call(this);

@@ -5,16 +5,17 @@
   Canmore.archie = new Canmore.Architect;
 
   $(function() {
-    return AR.context.onLocationChanged = function(lat, long, alt, acc) {
+    AR.context.onLocationChanged = function(lat, long, alt, acc) {
       return Canmore.archie.locationChanged(lat, long, alt, acc);
     };
+    return Canmore.archie.setMode('photo');
   });
 
   lat = 55.8891;
 
   long = -4.2887;
 
-  timesToChange = 5;
+  timesToChange = 2;
 
   changeLocation = function() {
     if (!(timesToChange < 1)) {
@@ -27,6 +28,6 @@
 
   changeLocation();
 
-  setInterval(changeLocation, 10000);
+  setInterval(changeLocation, 5000);
 
 }).call(this);
