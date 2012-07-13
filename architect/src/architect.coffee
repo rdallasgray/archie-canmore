@@ -21,8 +21,9 @@ class Architect
     @mode = null
     
   log:(msg) ->
-    $("#status").html "<p>#{msg}</p>"
-
+    
+#    $("#status").html "<p>#{msg}</p>"
+  
   setLocation: (loc, lat, long, alt) ->
     [loc.latitude, loc.longitude, loc.altitude] = [lat, long, alt]
 

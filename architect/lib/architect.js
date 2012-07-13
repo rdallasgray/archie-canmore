@@ -34,9 +34,7 @@
       this.mode = null;
     }
 
-    Architect.prototype.log = function(msg) {
-      return $("#status").html("<p>" + msg + "</p>");
-    };
+    Architect.prototype.log = function(msg) {};
 
     Architect.prototype.setLocation = function(loc, lat, long, alt) {
       var _ref;
