@@ -19,6 +19,10 @@ class Architect
     @placemarkGeoObjects = {}
     @locationChangedFunc = null
     @mode = null
+    @reportBuffer = []
+    @reportInterval = 500
+    @timeSinceLastReport = @reportInterval
+    setInterval (=> @clearReportBuffer()), @reportInterval
     
   log:(msg) ->
     if $("#status p").length > 20
@@ -27,7 +31,12 @@ class Architect
     $("#status").html html+"<p>#{msg}</p>"
 
   report:(msg) ->
-    location = document.location
+    @reportBuffer.push msg
+
+  clearReportBuffer: ->
+    msg = @reportBuffer.shift()
+    if msg == undefined
+      return
     document.location = "architectsdk://report?msg="+encodeURIComponent(msg)
   
   setLocation: (loc, lat, long, alt) ->
@@ -43,7 +52,7 @@ class Architect
       @locationChangedFunc()
 
   setMode:(mode, data = null) ->
-    @log "setting mode #{mode}"
+    @report "setting mode #{mode}"
     return if mode == @mode
     if mode == 'photo'
       @setupPhotoMode()
@@ -169,7 +178,7 @@ class Architect
     delete collection[id]
 
   createGeoObject: (location, imgUri, id, collectionName) ->
-    @log "creating geoObject #{id} in collection #{collectionName}"
+    @report "creating geoObject #{id} in collection #{collectionName}"
     collection = @[collectionName]
     location = new AR.GeoLocation location.lat, location.long, location.alt
     distance = @currentLocation.distanceTo location

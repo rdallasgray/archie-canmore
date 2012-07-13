@@ -25,6 +25,7 @@
     Architect.prototype.OFFSET_Y_RANDOM_FACTOR = 3;
 
     function Architect(canmoreRequestUrl) {
+      var _this = this;
       this.canmoreRequestUrl = canmoreRequestUrl || this.CANMORE_REQUEST_URL;
       this.lastLocation = new AR.GeoLocation(0, 0, 0);
       this.currentLocation = new AR.GeoLocation(0, 0, 0);
@@ -32,6 +33,12 @@
       this.placemarkGeoObjects = {};
       this.locationChangedFunc = null;
       this.mode = null;
+      this.reportBuffer = [];
+      this.reportInterval = 500;
+      this.timeSinceLastReport = this.reportInterval;
+      setInterval((function() {
+        return _this.clearReportBuffer();
+      }), this.reportInterval);
     }
 
     Architect.prototype.log = function(msg) {
@@ -44,8 +51,15 @@
     };
 
     Architect.prototype.report = function(msg) {
-      var location;
-      location = document.location;
+      return this.reportBuffer.push(msg);
+    };
+
+    Architect.prototype.clearReportBuffer = function() {
+      var msg;
+      msg = this.reportBuffer.shift();
+      if (msg === void 0) {
+        return;
+      }
       return document.location = "architectsdk://report?msg=" + encodeURIComponent(msg);
     };
 
@@ -70,7 +84,7 @@
       if (data == null) {
         data = null;
       }
-      this.log("setting mode " + mode);
+      this.report("setting mode " + mode);
       if (mode === this.mode) {
         return;
       }
@@ -306,7 +320,7 @@
     Architect.prototype.createGeoObject = function(location, imgUri, id, collectionName) {
       var collection, distance, drawable, drawableOptions, geoObject, imgRes,
         _this = this;
-      this.log("creating geoObject " + id + " in collection " + collectionName);
+      this.report("creating geoObject " + id + " in collection " + collectionName);
       collection = this[collectionName];
       location = new AR.GeoLocation(location.lat, location.long, location.alt);
       distance = this.currentLocation.distanceTo(location);
