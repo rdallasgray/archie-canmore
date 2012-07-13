@@ -20,7 +20,7 @@
 
     Architect.prototype.DISTANCE_SCALE_FACTOR = 1.75;
 
-    Architect.prototype.MIN_SCALING_DISTANCE = 50;
+    Architect.prototype.MIN_SCALING_DISTANCE = 100;
 
     Architect.prototype.OFFSET_Y_RANDOM_FACTOR = 3;
 
