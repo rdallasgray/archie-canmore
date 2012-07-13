@@ -17,6 +17,7 @@ class Architect
     @currentLocation = new AR.GeoLocation(0, 0, 0)
     @photoGeoObjects = {}
     @placemarkGeoObjects = {}
+    @imgResources = {}
     @locationChangedFunc = null
     @mode = null
     @reportBuffer = []
@@ -30,6 +31,9 @@ class Architect
       $("#status p").first().remove()
     html = $("#status").html()
     $("#status").html html+"<p>#{msg}</p>"
+
+  showLog: ->
+    $("#status").show()
 
   report:(msg) ->
     @reportBuffer.push { 'report': msg }
@@ -175,6 +179,7 @@ class Architect
     collection = @["#{type}GeoObjects"]
     geo = collection[id]
     for drawable in geo.drawables.cam
+      delete @imgResources[drawable.imageResource.uri]
       drawable.imageResource.destroy()
       drawable.destroy()
     for location in geo.locations
@@ -203,6 +208,9 @@ class Architect
     document.location = "architectsdk://clickedobject?id=#{id}&collection=#{collection}"
   
   createImageResource: (uri, geoObject) ->
+    if @imgResources[uri] != undefined
+      geoObject.enabled = true
+      return @imgResources[uri]
     @log "creating imageResource for #{uri}"
     imgRes = new AR.ImageResource uri,
       onError: =>
@@ -211,6 +219,7 @@ class Architect
         unless imgRes.getHeight() is 109 and imgRes.getWidth() is 109
           @log "loaded image #{uri}"
           geoObject.enabled = true
+    @imgResources[uri] = imgRes
     return imgRes
 
   createImageDrawable: (imgRes, options) ->

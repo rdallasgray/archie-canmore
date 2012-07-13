@@ -8,6 +8,7 @@
     position: fixed;
     padding: 20px;
     font-size: 70%;
+    display: none;
 }
 
 p {

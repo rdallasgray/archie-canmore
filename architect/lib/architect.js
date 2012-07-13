@@ -31,6 +31,7 @@
       this.currentLocation = new AR.GeoLocation(0, 0, 0);
       this.photoGeoObjects = {};
       this.placemarkGeoObjects = {};
+      this.imgResources = {};
       this.locationChangedFunc = null;
       this.mode = null;
       this.reportBuffer = [];
@@ -49,6 +50,10 @@
       }
       html = $("#status").html();
       return $("#status").html(html + ("<p>" + msg + "</p>"));
+    };
+
+    Architect.prototype.showLog = function() {
+      return $("#status").show();
     };
 
     Architect.prototype.report = function(msg) {
@@ -319,6 +324,7 @@
       _ref = geo.drawables.cam;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         drawable = _ref[_i];
+        delete this.imgResources[drawable.imageResource.uri];
         drawable.imageResource.destroy();
         drawable.destroy();
       }
@@ -363,6 +369,10 @@
     Architect.prototype.createImageResource = function(uri, geoObject) {
       var imgRes,
         _this = this;
+      if (this.imgResources[uri] !== void 0) {
+        geoObject.enabled = true;
+        return this.imgResources[uri];
+      }
       this.log("creating imageResource for " + uri);
       imgRes = new AR.ImageResource(uri, {
         onError: function() {
@@ -375,6 +385,7 @@
           }
         }
       });
+      this.imgResources[uri] = imgRes;
       return imgRes;
     };
 
