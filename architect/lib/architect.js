@@ -35,6 +35,7 @@
     }
 
     Architect.prototype.log = function(msg) {
+      $.ajax("architectsdk://logmessage?" + encodeURIComponent(msg));
       return $("#status").html("<p>" + msg + "</p>");
     };
 
