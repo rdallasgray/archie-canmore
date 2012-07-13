@@ -68,7 +68,7 @@ class Architect
     @getPhotosForLocation @currentLocation
 
   cleanUpPhotos: ->
-    @log "Cleaning up photos"
+    @log "cleaning up photos"
     for id, item of @photoGeoObjects
       distance = @currentLocation.distanceTo(item.locations[0])
       @log "Object #{id} is #{distance}m away"
@@ -138,8 +138,8 @@ class Architect
     @log "updating placemarks"
     for id, placemark of @placemarkGeoObjects
       distance = @currentLocation.distanceTo(placemark.locations[0])
-      @log "Object #{id} is #{distance}m away"
-      @log "Resetting opacity and scale on object #{id}"
+      @log "object #{id} is #{distance}m away"
+      @log "resetting opacity and scale on object #{id}"
       for drawable in placemark.drawables.cam
         @setOpacityAndScaleOnDrawable(drawable, distance)
 
@@ -185,10 +185,10 @@ class Architect
     @log "creating imageResource for #{uri}"
     imgRes = new AR.ImageResource uri,
       onError: =>
-        @log "Error loading image #{uri}"
+        @log "error loading image #{uri}"
       onLoaded: =>
         unless imgRes.getHeight() is 109 and imgRes.getWidth() is 109
-          @log "Loaded image #{uri}"
+          @log "loaded image #{uri}"
           geoObject.enabled = true
     return imgRes
 
@@ -201,7 +201,6 @@ class Architect
     $.getJSON requestUrl, (data) -> callback(data)
 
   empty: (object) ->
-    @log "empty?"
     for key, val of object
       return false
     true

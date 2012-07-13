@@ -107,7 +107,7 @@
 
     Architect.prototype.cleanUpPhotos = function() {
       var distance, drawable, id, item, _ref, _results;
-      this.log("Cleaning up photos");
+      this.log("cleaning up photos");
       _ref = this.photoGeoObjects;
       _results = [];
       for (id in _ref) {
@@ -245,8 +245,8 @@
       for (id in _ref) {
         placemark = _ref[id];
         distance = this.currentLocation.distanceTo(placemark.locations[0]);
-        this.log("Object " + id + " is " + distance + "m away");
-        this.log("Resetting opacity and scale on object " + id);
+        this.log("object " + id + " is " + distance + "m away");
+        this.log("resetting opacity and scale on object " + id);
         _results.push((function() {
           var _i, _len, _ref1, _results1;
           _ref1 = placemark.drawables.cam;
@@ -327,11 +327,11 @@
       this.log("creating imageResource for " + uri);
       imgRes = new AR.ImageResource(uri, {
         onError: function() {
-          return _this.log("Error loading image " + uri);
+          return _this.log("error loading image " + uri);
         },
         onLoaded: function() {
           if (!(imgRes.getHeight() === 109 && imgRes.getWidth() === 109)) {
-            _this.log("Loaded image " + uri);
+            _this.log("loaded image " + uri);
             return geoObject.enabled = true;
           }
         }
@@ -354,7 +354,6 @@
 
     Architect.prototype.empty = function(object) {
       var key, val;
-      this.log("empty?");
       for (key in object) {
         val = object[key];
         return false;
