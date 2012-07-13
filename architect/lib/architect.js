@@ -20,7 +20,7 @@
 
     Architect.prototype.DISTANCE_SCALE_FACTOR = 1.75;
 
-    Architect.prototype.MIN_SCALING_DISTANCE = 100;
+    Architect.prototype.MIN_SCALING_DISTANCE = 50;
 
     Architect.prototype.OFFSET_Y_RANDOM_FACTOR = 3;
 
@@ -114,7 +114,7 @@
         item = _ref[id];
         distance = this.currentLocation.distanceTo(item.locations[0]);
         this.log("Object " + id + " is " + distance + "m away");
-        if (distance > this.RADIUS / 2) {
+        if (distance > this.RADIUS) {
           this.log("Destroying object " + id);
           _results.push(this.destroyGeoObject('photo', id));
         } else {
@@ -166,23 +166,31 @@
       });
     };
 
-    Architect.prototype.setupPlacemarkMode = function(data) {
+    Architect.prototype.setupPlacemarkMode = function() {
       this.locationChangedFunc = null;
       this.mode = 'placemark';
-      if (data !== null) {
-        this.recreatePlacemarksWithData(data);
-      } else {
-        this.enablePlacemarks;
+      if (this.empty(this.placemarkGeoObjects)) {
+        this.requestPlacemarkData();
       }
+      this.enablePlacemarks();
       return this.locationChangedFunc = this.maybeUpdatePlacemarks;
     };
 
-    Architect.prototype.recreatePlacemarksWithData = function(data) {
-      var details, id, _results;
+    Architect.prototype.requestPlacemarkData = function() {
+      this.log("requesting placemark data");
+      return document.location = "architectsdk://requestplacemarkdata";
+    };
+
+    Architect.prototype.setPlacemarkData = function(data) {
+      var count, details, id, _results;
+      this.log("setting placemark data");
+      count = 0;
       this.destroyPlacemarks;
       _results = [];
       for (id in data) {
         details = data[id];
+        count++;
+        this.log(count);
         _results.push(this.createGeoObject(details.location, details.imgUri, id, 'placemarkGeoObjects'));
       }
       return _results;
@@ -309,7 +317,8 @@
     };
 
     Architect.prototype.objectWasClicked = function(id, collection) {
-      return this.log("clicked " + id + ", " + collection);
+      this.log("clicked " + id + ", " + collection);
+      return document.location = "architectsdk://clickedobject?id=" + id + "&collection=" + collection;
     };
 
     Architect.prototype.createImageResource = function(uri, geoObject) {
@@ -341,6 +350,16 @@
       return $.getJSON(requestUrl, function(data) {
         return callback(data);
       });
+    };
+
+    Architect.prototype.empty = function(object) {
+      var key, val;
+      this.log("empty?");
+      for (key in object) {
+        val = object[key];
+        return false;
+      }
+      return true;
     };
 
     return Architect;

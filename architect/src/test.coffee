@@ -1,7 +1,7 @@
 Canmore.archie = new Canmore.Architect
 $ ->
   AR.context.onLocationChanged = (lat, long, alt, acc) -> Canmore.archie.locationChanged(lat, long, alt, acc)
-  Canmore.archie.setMode 'photo'
+  Canmore.archie.setMode 'placemark'
 
 lat = 55.8891
 long = -4.2887

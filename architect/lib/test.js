@@ -8,7 +8,7 @@
     AR.context.onLocationChanged = function(lat, long, alt, acc) {
       return Canmore.archie.locationChanged(lat, long, alt, acc);
     };
-    return Canmore.archie.setMode('photo');
+    return Canmore.archie.setMode('placemark');
   });
 
   lat = 55.8891;

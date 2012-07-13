@@ -7,6 +7,6 @@
     return Canmore.archie.locationChanged(lat, long, alt, acc);
   };
 
-  Canmore.archie.setMode('photo');
+  Canmore.archie.setMode('placemark');
 
 }).call(this);

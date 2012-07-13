@@ -8,7 +8,7 @@ class Architect
   RADIUS: 250
   DEFAULT_HEIGHT_SDU: 4.5
   DISTANCE_SCALE_FACTOR: 1.75
-  MIN_SCALING_DISTANCE: 100
+  MIN_SCALING_DISTANCE: 50
   OFFSET_Y_RANDOM_FACTOR: 3
 
   constructor: (canmoreRequestUrl) ->
@@ -72,7 +72,7 @@ class Architect
     for id, item of @photoGeoObjects
       distance = @currentLocation.distanceTo(item.locations[0])
       @log "Object #{id} is #{distance}m away"
-      if distance > @RADIUS / 2
+      if distance > @RADIUS
         @log "Destroying object #{id}"
         @destroyGeoObject('photo', id)
       else
@@ -95,18 +95,25 @@ class Architect
       for id in siteIds
         @createPhotoGeoObject id
 
-  setupPlacemarkMode:(data) ->
+  setupPlacemarkMode:() ->
     @locationChangedFunc = null
     @mode = 'placemark'
-    if data != null
-      @recreatePlacemarksWithData data
-    else
-      @enablePlacemarks
+    if @empty(@placemarkGeoObjects)
+      @requestPlacemarkData()
+    @enablePlacemarks()
     @locationChangedFunc = @maybeUpdatePlacemarks
 
-  recreatePlacemarksWithData: (data) ->
+  requestPlacemarkData: ->
+    @log "requesting placemark data"
+    document.location = "architectsdk://requestplacemarkdata"
+    
+  setPlacemarkData: (data) ->
+    @log "setting placemark data"
+    count = 0
     @destroyPlacemarks
     for id, details of data
+      count++
+      @log count
       @createGeoObject details.location, details.imgUri, id, 'placemarkGeoObjects'
 
   destroyPlacemarks: ->
@@ -172,6 +179,7 @@ class Architect
 
   objectWasClicked: (id, collection) ->
     @log "clicked #{id}, #{collection}"
+    document.location = "architectsdk://clickedobject?id=#{id}&collection=#{collection}"
   
   createImageResource: (uri, geoObject) ->
     @log "creating imageResource for #{uri}"
@@ -191,6 +199,12 @@ class Architect
     params ||= []
     requestUrl = @canmoreRequestUrl + url + params.join('/') + '?callback=?'
     $.getJSON requestUrl, (data) -> callback(data)
+
+  empty: (object) ->
+    @log "empty?"
+    for key, val of object
+      return false
+    true
 
 
 root.Canmore =
