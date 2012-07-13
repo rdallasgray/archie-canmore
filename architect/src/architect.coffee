@@ -21,8 +21,11 @@ class Architect
     @mode = null
     
   log:(msg) ->
-    $.ajax("architectsdk://logmessage?"+encodeURIComponent(msg))
     $("#status").html "<p>#{msg}</p>"
+
+  report:(msg) ->
+    location = document.location
+    document.location = "architectsdk://report?msg="+encodeURIComponent(msg)
   
   setLocation: (loc, lat, long, alt) ->
     [loc.latitude, loc.longitude, loc.altitude] = [lat, long, alt]
