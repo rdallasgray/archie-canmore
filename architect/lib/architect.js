@@ -34,7 +34,8 @@
       this.locationChangedFunc = null;
       this.mode = null;
       this.reportBuffer = [];
-      this.reportInterval = 500;
+      this.reportInterval = 10;
+      this.reportCount = 0;
       this.timeSinceLastReport = this.reportInterval;
       setInterval((function() {
         return _this.clearReportBuffer();
@@ -51,16 +52,29 @@
     };
 
     Architect.prototype.report = function(msg) {
-      return this.reportBuffer.push(msg);
+      return this.reportBuffer.push({
+        'report': msg
+      });
+    };
+
+    Architect.prototype.request = function(msg) {
+      return this.reportBuffer.unshift({
+        'request': msg
+      });
     };
 
     Architect.prototype.clearReportBuffer = function() {
-      var msg;
-      msg = this.reportBuffer.shift();
-      if (msg === void 0) {
+      var msg, report, type, _results;
+      report = this.reportBuffer.shift();
+      if (report === void 0) {
         return;
       }
-      return document.location = "architectsdk://report?msg=" + encodeURIComponent(msg);
+      _results = [];
+      for (type in report) {
+        msg = report[type];
+        _results.push(document.location = ("architectsdk://" + type + "?msg=") + encodeURIComponent(msg));
+      }
+      return _results;
     };
 
     Architect.prototype.setLocation = function(loc, lat, long, alt) {
@@ -203,7 +217,7 @@
 
     Architect.prototype.requestPlacemarkData = function() {
       this.log("requesting placemark data");
-      return document.location = "architectsdk://requestplacemarkdata";
+      return this.request("requestplacemarkdata");
     };
 
     Architect.prototype.setPlacemarkData = function(data) {
@@ -320,7 +334,7 @@
     Architect.prototype.createGeoObject = function(location, imgUri, id, collectionName) {
       var collection, distance, drawable, drawableOptions, geoObject, imgRes,
         _this = this;
-      this.report("creating geoObject " + id + " in collection " + collectionName);
+      this.report("creating geoObject " + id + " in collection " + collectionName + "::" + (this.reportCount++));
       collection = this[collectionName];
       location = new AR.GeoLocation(location.lat, location.long, location.alt);
       distance = this.currentLocation.distanceTo(location);

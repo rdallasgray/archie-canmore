@@ -20,7 +20,8 @@ class Architect
     @locationChangedFunc = null
     @mode = null
     @reportBuffer = []
-    @reportInterval = 500
+    @reportInterval = 10
+    @reportCount = 0
     @timeSinceLastReport = @reportInterval
     setInterval (=> @clearReportBuffer()), @reportInterval
     
@@ -31,13 +32,17 @@ class Architect
     $("#status").html html+"<p>#{msg}</p>"
 
   report:(msg) ->
-    @reportBuffer.push msg
+    @reportBuffer.push { 'report': msg }
+
+  request:(msg) ->
+    @reportBuffer.unshift { 'request': msg }
 
   clearReportBuffer: ->
-    msg = @reportBuffer.shift()
-    if msg == undefined
+    report = @reportBuffer.shift()
+    if report == undefined
       return
-    document.location = "architectsdk://report?msg="+encodeURIComponent(msg)
+    for type, msg of report
+      document.location = "architectsdk://#{type}?msg="+encodeURIComponent(msg)
   
   setLocation: (loc, lat, long, alt) ->
     [loc.latitude, loc.longitude, loc.altitude] = [lat, long, alt]
@@ -121,7 +126,7 @@ class Architect
 
   requestPlacemarkData: ->
     @log "requesting placemark data"
-    document.location = "architectsdk://requestplacemarkdata"
+    @request "requestplacemarkdata"
     
   setPlacemarkData: (data) ->
     @log "setting placemark data"
@@ -178,7 +183,7 @@ class Architect
     delete collection[id]
 
   createGeoObject: (location, imgUri, id, collectionName) ->
-    @report "creating geoObject #{id} in collection #{collectionName}"
+    @report "creating geoObject #{id} in collection #{collectionName}::#{@reportCount++}"
     collection = @[collectionName]
     location = new AR.GeoLocation location.lat, location.long, location.alt
     distance = @currentLocation.distanceTo location
