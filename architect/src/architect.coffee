@@ -21,7 +21,10 @@ class Architect
     @mode = null
     
   log:(msg) ->
-    $("#status").html "<p>#{msg}</p>"
+    if $("#status p").length > 20
+      $("#status p").first().remove()
+    html = $("#status").html()
+    $("#status").html html+"<p>#{msg}</p>"
 
   report:(msg) ->
     location = document.location

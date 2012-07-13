@@ -35,7 +35,12 @@
     }
 
     Architect.prototype.log = function(msg) {
-      return $("#status").html("<p>" + msg + "</p>");
+      var html;
+      if ($("#status p").length > 20) {
+        $("#status p").first().remove();
+      }
+      html = $("#status").html();
+      return $("#status").html(html + ("<p>" + msg + "</p>"));
     };
 
     Architect.prototype.report = function(msg) {
