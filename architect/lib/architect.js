@@ -34,7 +34,9 @@
       this.mode = null;
     }
 
-    Architect.prototype.log = function(msg) {};
+    Architect.prototype.log = function(msg) {
+      return document.location = "architectsdk://log?msg=" + encodeURIComponent(msg);
+    };
 
     Architect.prototype.setLocation = function(loc, lat, long, alt) {
       var _ref;

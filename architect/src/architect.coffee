@@ -21,7 +21,7 @@ class Architect
     @mode = null
     
   log:(msg) ->
-    
+    document.location = "architectsdk://log?msg="+encodeURIComponent(msg)
 #    $("#status").html "<p>#{msg}</p>"
   
   setLocation: (loc, lat, long, alt) ->
