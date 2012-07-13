@@ -35,7 +35,7 @@
     }
 
     Architect.prototype.log = function(msg) {
-      return document.location = "architectsdk://log?msg=" + encodeURIComponent(msg);
+      return $("#status").html("<p>" + msg + "</p>");
     };
 
     Architect.prototype.setLocation = function(loc, lat, long, alt) {
