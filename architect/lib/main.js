@@ -2,7 +2,7 @@
 (function() {
 
   $(function() {
-    Canmore.archie = new Canmore.Architect("http://glowing-moon-5208.heroku.com/archie-canmore.html");
+    Canmore.archie = new Canmore.Architect("http://glowing-moon-5208.heroku.com/");
     AR.context.onLocationChanged = function(lat, long, alt, acc) {
       return Canmore.archie.locationChanged(lat, long, alt, acc);
     };

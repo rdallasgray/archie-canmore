@@ -45,9 +45,13 @@ class Architect
     report = @reportBuffer.shift()
     if report == undefined
       return
+    @sendReport(report)    
+
+  sendReport:(report) ->
     for type, msg of report
+#      console.log("#{type}: #{msg} ")
       document.location = "architectsdk://#{type}?msg="+encodeURIComponent(msg)
-  
+        
   setLocation: (loc, lat, long, alt) ->
     [loc.latitude, loc.longitude, loc.altitude] = [lat, long, alt]
 
@@ -63,24 +67,30 @@ class Architect
   setMode:(mode, data = null) ->
     @report "setting mode #{mode}"
     return if mode == @mode
-    if mode == 'photo'
+    if mode == "photo"
       @setupPhotoMode()
     else
-      @setupPlacemarkMode(data)
+      @setupPlacemarkMode()
 
   setupPhotoMode: ->
+    @report "setting up photo mode"
     @locationChangedFunc = null
     @mode = 'photo'
-    @disablePlacemarks
-    @cleanUpPhotos
-    @enablePhotos
+    @disablePlacemarks()
+    @cleanUpPhotos()
+    @enablePhotos()
+    if @locationChangeSufficient()
+      @updatePhotos
     @locationChangedFunc = @maybeUpdatePhotos
+
+  locationChangeSufficient: ->
+    @currentLocation.distanceTo(@lastLocation) > @RADIUS / 5
 
   maybeUpdatePhotos: ->
     @log "conditionally updating photos"
-    if @currentLocation.distanceTo(@lastLocation) > @RADIUS / 5
+    if @locationChangeSufficient()
       @setLastLocation @currentLocation
-      @cleanUpPhotos
+      @cleanUpPhotos()
       @updatePhotos()
 
   enablePhotos: ->
@@ -89,43 +99,47 @@ class Architect
       photo.enabled = true
 
   updatePhotos: ->
-    @log "updating photos"
+    @report "updating photos"
     @getPhotosForLocation @currentLocation
 
   cleanUpPhotos: ->
-    @log "cleaning up photos"
+    @report "cleaning up photos"
     for id, item of @photoGeoObjects
       distance = @currentLocation.distanceTo(item.locations[0])
-      @log "Object #{id} is #{distance}m away"
+      @report "Object #{id} is #{distance}m away"
       if distance > @RADIUS
-        @log "Destroying object #{id}"
+        @report "Destroying object #{id}"
         @destroyGeoObject('photo', id)
       else
-        @log "Resetting opacity and scale on object #{id}"
+        @report "Resetting opacity and scale on object #{id}"
         for drawable in item.drawables.cam
           @setOpacityAndScaleOnDrawable(drawable, distance)
 
   createPhotoGeoObject: (siteId) ->
-    @log "creating photoGeoObject for id #{siteId}"
-    if not @photoGeoObjects[siteId]
+    @report "creating photoGeoObject for id #{siteId}"
+    if @photoGeoObjects[siteId] == undefined
       @serverRequest "details_for_site_id/", [siteId], (siteDetails) =>
         @log "creating geoObject with loc #{siteDetails.lat}, #{siteDetails.long}: #{siteDetails.thumbs[0]}"
         location = { lat: siteDetails.lat, long: siteDetails.long, alt: @currentLocation.altitude }
         @createGeoObject location, siteDetails.thumbs[0], siteId, 'photoGeoObjects'
           
   getPhotosForLocation: (loc) ->
-    @log "getting photos for location #{loc.latitude}, #{loc.longitude}"
+    @report "getting photos for location #{loc.latitude}, #{loc.longitude}"
     @serverRequest "site_ids_for_location/", [loc.latitude, loc.longitude, @RADIUS], (siteIds) =>
-      @log "Found #{siteIds.length} images"
+      @report "Found #{siteIds.length} images"
       for id in siteIds
         @createPhotoGeoObject id
 
-  setupPlacemarkMode:() ->
+  setupPlacemarkMode: ->
+    @report "setting up placemark mode"
     @locationChangedFunc = null
-    @mode = 'placemark'
+    @mode = "placemark"
     if @empty(@placemarkGeoObjects)
       @requestPlacemarkData()
+    @report "enabling placemarks"
     @enablePlacemarks()
+    if @locationChangeSufficient()
+      @updatePlacemarks
     @locationChangedFunc = @maybeUpdatePlacemarks
 
   requestPlacemarkData: ->
@@ -134,30 +148,29 @@ class Architect
     
   setPlacemarkData: (data) ->
     @log "setting placemark data"
-    count = 0
-    @destroyPlacemarks
+    @destroyPlacemarks()
     for id, details of data
-      count++
-      @log count
-      @createGeoObject details.location, details.imgUri, id, 'placemarkGeoObjects'
+      @createGeoObject details.location, details.imgUri, id, "placemarkGeoObjects"
 
   destroyPlacemarks: ->
     for id, placemark of @placemarkGeoObjects
-      destroyGeoObject 'placemark', id
+      @destroyGeoObject "placemark", id
 
   enablePlacemarks: ->
     for id, placemark of @placemarkGeoObjects
       placemark.enabled = true
 
   disablePlacemarks: ->
+    @report "disabling placemarks"
     for id, placemark of @placemarkGeoObjects
+      @report "disabling placemark #{id}"
       placemark.enabled = false
 
   maybeUpdatePlacemarks: ->
     @log "conditionally updating placemarks"
     if @currentLocation.distanceTo(@lastLocation) > @RADIUS / 5
       @setLastLocation @currentLocation
-      @updatePlacemarks
+      @updatePlacemarks()
 
   updatePlacemarks: ->
     @log "updating placemarks"
@@ -175,7 +188,8 @@ class Architect
     drawable.scale = scale
     drawable.opacity = opacity 
 
-  destroyGeoObject: (type = 'photo', id) ->
+  destroyGeoObject: (type = "photo", id) ->
+    @report "destroying #{type} geoObjects"
     collection = @["#{type}GeoObjects"]
     geo = collection[id]
     for drawable in geo.drawables.cam
@@ -211,7 +225,7 @@ class Architect
     if @imgResources[uri] != undefined
       geoObject.enabled = true
       return @imgResources[uri]
-    @log "creating imageResource for #{uri}"
+    @report "creating imageResource for #{uri}"
     imgRes = new AR.ImageResource uri,
       onError: =>
         @log "error loading image #{uri}"

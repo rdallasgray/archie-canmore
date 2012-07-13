@@ -69,11 +69,16 @@
     };
 
     Architect.prototype.clearReportBuffer = function() {
-      var msg, report, type, _results;
+      var report;
       report = this.reportBuffer.shift();
       if (report === void 0) {
         return;
       }
+      return this.sendReport(report);
+    };
+
+    Architect.prototype.sendReport = function(report) {
+      var msg, type, _results;
       _results = [];
       for (type in report) {
         msg = report[type];
@@ -107,27 +112,35 @@
       if (mode === this.mode) {
         return;
       }
-      if (mode === 'photo') {
+      if (mode === "photo") {
         return this.setupPhotoMode();
       } else {
-        return this.setupPlacemarkMode(data);
+        return this.setupPlacemarkMode();
       }
     };
 
     Architect.prototype.setupPhotoMode = function() {
+      this.report("setting up photo mode");
       this.locationChangedFunc = null;
       this.mode = 'photo';
-      this.disablePlacemarks;
-      this.cleanUpPhotos;
-      this.enablePhotos;
+      this.disablePlacemarks();
+      this.cleanUpPhotos();
+      this.enablePhotos();
+      if (this.locationChangeSufficient()) {
+        this.updatePhotos;
+      }
       return this.locationChangedFunc = this.maybeUpdatePhotos;
+    };
+
+    Architect.prototype.locationChangeSufficient = function() {
+      return this.currentLocation.distanceTo(this.lastLocation) > this.RADIUS / 5;
     };
 
     Architect.prototype.maybeUpdatePhotos = function() {
       this.log("conditionally updating photos");
-      if (this.currentLocation.distanceTo(this.lastLocation) > this.RADIUS / 5) {
+      if (this.locationChangeSufficient()) {
         this.setLastLocation(this.currentLocation);
-        this.cleanUpPhotos;
+        this.cleanUpPhotos();
         return this.updatePhotos();
       }
     };
@@ -145,24 +158,24 @@
     };
 
     Architect.prototype.updatePhotos = function() {
-      this.log("updating photos");
+      this.report("updating photos");
       return this.getPhotosForLocation(this.currentLocation);
     };
 
     Architect.prototype.cleanUpPhotos = function() {
       var distance, drawable, id, item, _ref, _results;
-      this.log("cleaning up photos");
+      this.report("cleaning up photos");
       _ref = this.photoGeoObjects;
       _results = [];
       for (id in _ref) {
         item = _ref[id];
         distance = this.currentLocation.distanceTo(item.locations[0]);
-        this.log("Object " + id + " is " + distance + "m away");
+        this.report("Object " + id + " is " + distance + "m away");
         if (distance > this.RADIUS) {
-          this.log("Destroying object " + id);
+          this.report("Destroying object " + id);
           _results.push(this.destroyGeoObject('photo', id));
         } else {
-          this.log("Resetting opacity and scale on object " + id);
+          this.report("Resetting opacity and scale on object " + id);
           _results.push((function() {
             var _i, _len, _ref1, _results1;
             _ref1 = item.drawables.cam;
@@ -180,8 +193,8 @@
 
     Architect.prototype.createPhotoGeoObject = function(siteId) {
       var _this = this;
-      this.log("creating photoGeoObject for id " + siteId);
-      if (!this.photoGeoObjects[siteId]) {
+      this.report("creating photoGeoObject for id " + siteId);
+      if (this.photoGeoObjects[siteId] === void 0) {
         return this.serverRequest("details_for_site_id/", [siteId], function(siteDetails) {
           var location;
           _this.log("creating geoObject with loc " + siteDetails.lat + ", " + siteDetails.long + ": " + siteDetails.thumbs[0]);
@@ -197,10 +210,10 @@
 
     Architect.prototype.getPhotosForLocation = function(loc) {
       var _this = this;
-      this.log("getting photos for location " + loc.latitude + ", " + loc.longitude);
+      this.report("getting photos for location " + loc.latitude + ", " + loc.longitude);
       return this.serverRequest("site_ids_for_location/", [loc.latitude, loc.longitude, this.RADIUS], function(siteIds) {
         var id, _i, _len, _results;
-        _this.log("Found " + siteIds.length + " images");
+        _this.report("Found " + siteIds.length + " images");
         _results = [];
         for (_i = 0, _len = siteIds.length; _i < _len; _i++) {
           id = siteIds[_i];
@@ -211,12 +224,17 @@
     };
 
     Architect.prototype.setupPlacemarkMode = function() {
+      this.report("setting up placemark mode");
       this.locationChangedFunc = null;
-      this.mode = 'placemark';
+      this.mode = "placemark";
       if (this.empty(this.placemarkGeoObjects)) {
         this.requestPlacemarkData();
       }
+      this.report("enabling placemarks");
       this.enablePlacemarks();
+      if (this.locationChangeSufficient()) {
+        this.updatePlacemarks;
+      }
       return this.locationChangedFunc = this.maybeUpdatePlacemarks;
     };
 
@@ -226,16 +244,13 @@
     };
 
     Architect.prototype.setPlacemarkData = function(data) {
-      var count, details, id, _results;
+      var details, id, _results;
       this.log("setting placemark data");
-      count = 0;
-      this.destroyPlacemarks;
+      this.destroyPlacemarks();
       _results = [];
       for (id in data) {
         details = data[id];
-        count++;
-        this.log(count);
-        _results.push(this.createGeoObject(details.location, details.imgUri, id, 'placemarkGeoObjects'));
+        _results.push(this.createGeoObject(details.location, details.imgUri, id, "placemarkGeoObjects"));
       }
       return _results;
     };
@@ -246,7 +261,7 @@
       _results = [];
       for (id in _ref) {
         placemark = _ref[id];
-        _results.push(destroyGeoObject('placemark', id));
+        _results.push(this.destroyGeoObject("placemark", id));
       }
       return _results;
     };
@@ -264,10 +279,12 @@
 
     Architect.prototype.disablePlacemarks = function() {
       var id, placemark, _ref, _results;
+      this.report("disabling placemarks");
       _ref = this.placemarkGeoObjects;
       _results = [];
       for (id in _ref) {
         placemark = _ref[id];
+        this.report("disabling placemark " + id);
         _results.push(placemark.enabled = false);
       }
       return _results;
@@ -277,7 +294,7 @@
       this.log("conditionally updating placemarks");
       if (this.currentLocation.distanceTo(this.lastLocation) > this.RADIUS / 5) {
         this.setLastLocation(this.currentLocation);
-        return this.updatePlacemarks;
+        return this.updatePlacemarks();
       }
     };
 
@@ -317,8 +334,9 @@
     Architect.prototype.destroyGeoObject = function(type, id) {
       var collection, drawable, geo, location, _i, _j, _len, _len1, _ref, _ref1;
       if (type == null) {
-        type = 'photo';
+        type = "photo";
       }
+      this.report("destroying " + type + " geoObjects");
       collection = this["" + type + "GeoObjects"];
       geo = collection[id];
       _ref = geo.drawables.cam;
@@ -373,7 +391,7 @@
         geoObject.enabled = true;
         return this.imgResources[uri];
       }
-      this.log("creating imageResource for " + uri);
+      this.report("creating imageResource for " + uri);
       imgRes = new AR.ImageResource(uri, {
         onError: function() {
           return _this.log("error loading image " + uri);
