@@ -14,7 +14,7 @@
 
     Architect.prototype.LONG_METERS = 70000;
 
-    Architect.prototype.RADIUS = 500;
+    Architect.prototype.RADIUS = 250;
 
     Architect.prototype.DEFAULT_HEIGHT_SDU = 4.5;
 
