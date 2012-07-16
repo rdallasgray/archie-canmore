@@ -23,7 +23,6 @@ class Architect
     @requestBuffer = []
     @requestInterval = 10
     @timeSinceLastRequest = @requestInterval
-    @locationChangeable = true
     setInterval (=> @clearRequestBuffer()), @requestInterval
     
   log:(msg) ->
@@ -66,9 +65,9 @@ class Architect
     @locationChangedFunc = null
     @mode = 'photo'
     @disablePlacemarks()
-    @cleanUpPhotos()
     @enablePhotos()
     if @locationChangeSufficient() || @empty @photoGeoObjects
+      @cleanUpPhotos()
       @updatePhotos()
     @locationChangedFunc = @maybeUpdatePhotos
 
