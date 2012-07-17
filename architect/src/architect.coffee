@@ -2,14 +2,16 @@ root = (exports ? this)
 
 class Architect
   CANMORE_REQUEST_URL: '/'
-  TEST_LOCATION: [55.8791, -4.2788, 59]
   LAT_METERS: 100000
   LONG_METERS: 70000
-  RADIUS: 250
+  RADIUS: 400
   DEFAULT_HEIGHT_SDU: 4.5
-  DISTANCE_SCALE_FACTOR: 1.75
   MIN_SCALING_DISTANCE: 50
+  DISTANCE_SCALE_LOG: 1.5
+  MIN_SCALING_FACTOR: 0.1
   OFFSET_Y_RANDOM_FACTOR: 3
+  REQUEST_INTERVAL: 50
+  LOG_LEVEL: 2
 
   constructor: (canmoreRequestUrl) ->
     @canmoreRequestUrl = canmoreRequestUrl || @CANMORE_REQUEST_URL
@@ -21,12 +23,14 @@ class Architect
     @locationChangedFunc = null
     @mode = null
     @requestBuffer = []
-    @requestInterval = 10
-    @timeSinceLastRequest = @requestInterval
-    setInterval (=> @clearRequestBuffer()), @requestInterval
+    @timeSinceLastRequest = @REQUEST_INTERVAL
+    @objectsToLoad = 0
+    setInterval (=> @clearRequestBuffer()), @REQUEST_INTERVAL
+    @request "status?loadedARview=true"
     
-  log:(msg) ->
-    console.log msg
+  log:(msg, level = 1) ->
+    if level >= @LOG_LEVEL
+      console.log msg
 
   request:(msg) ->
     @requestBuffer.push msg
@@ -119,7 +123,8 @@ class Architect
   getPhotosForLocation: (loc) ->
     @log "getting photos for location #{loc.latitude}, #{loc.longitude}"
     @serverRequest "site_ids_for_location/", [loc.latitude, loc.longitude, @RADIUS], (siteIds) =>
-      @log "Found #{siteIds.length} images"
+      @log "Found #{siteIds.length} images", 2
+      @setObjectsToLoad siteIds.length
       for id in siteIds
         @createPhotoGeoObject id
 
@@ -142,6 +147,7 @@ class Architect
   setPlacemarkData: (data) ->
     @log "setting placemark data"
     @destroyPlacemarks()
+    @setObjectsToLoad @lengthOf(data)
     for id, details of data
       @createGeoObject details.location, details.imgUri, id, "placemarkGeoObjects"
     @log "created placemarks"
@@ -175,12 +181,15 @@ class Architect
       for drawable in placemark.drawables.cam
         @setOpacityAndScaleOnDrawable(drawable, distance)
 
+  scalingFactor: (distance) ->
+    return 1 unless distance > @MIN_SCALING_DISTANCE
+    logVal = Math.log(distance / @MIN_SCALING_DISTANCE) / Math.log(@DISTANCE_SCALE_LOG)
+    Math.max(1 - (logVal / 10), @MIN_SCALING_FACTOR)
+
   setOpacityAndScaleOnDrawable: (drawable, distance) ->
-    scalingFactor = @MIN_SCALING_DISTANCE / (distance / @DISTANCE_SCALE_FACTOR)
-    scale = Math.min 1, scalingFactor
-    opacity = Math.min 1, scalingFactor
-    drawable.scale = scale
-    drawable.opacity = opacity 
+    scalingFactor = @scalingFactor distance
+    drawable.scale = scalingFactor
+    drawable.opacity = scalingFactor
 
   destroyGeoObject: (type = "photo", id) ->
     @log "destroying #{type} geoObjects"
@@ -214,16 +223,22 @@ class Architect
   objectWasClicked: (id, collection) ->
     @log "clicked #{id}, #{collection}"
     @request "clickedobject?id=#{id}&collection=#{collection}"
-  
+
+  setObjectsToLoad: (num) ->
+    @objectsToLoad = num
+    @request "status?objectstoload=#{num}"
+      
   createImageResource: (uri, geoObject) ->
     if @imgResources[uri] != undefined
       geoObject.enabled = true
+      @setObjectsToLoad --@objectsToLoad
       return @imgResources[uri]
     @log "creating imageResource for #{uri}"
     imgRes = new AR.ImageResource uri,
       onError: =>
         @log "error loading image #{uri}"
       onLoaded: =>
+        @setObjectsToLoad --@objectsToLoad
         unless imgRes.getHeight() is 109 and imgRes.getWidth() is 109
           @log "loaded image #{uri}"
           geoObject.enabled = true
@@ -243,6 +258,11 @@ class Architect
       return false
     true
 
+  lengthOf: (object) ->
+    count = 0
+    for key, val of object
+      count++
+    count
 
 root.Canmore =
   Architect: Architect

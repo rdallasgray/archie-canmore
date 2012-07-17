@@ -25,8 +25,7 @@ get '/site_ids_for_location/:lat/:long/:rad' do
     puts "Error: #{error.to_s}"
     res = []
   end
-    content_type 'text/javascript'
-    "#{params[:callback]}(#{res.to_json});"
+  return_result res, params[:callback]
 end
 
 get '/thumb_links_for_location/:lat/:long/:rad' do
@@ -36,8 +35,7 @@ get '/thumb_links_for_location/:lat/:long/:rad' do
     puts "Error: #{error.to_s}"
     res = []
   end
-    content_type 'text/javascript'
-    "#{params[:callback]}(#{res.to_json});"
+  return_result res, params[:callback]
 end
 
 get '/details_for_site_id/:id' do
@@ -47,6 +45,15 @@ get '/details_for_site_id/:id' do
     puts "Error: #{error.to_s}"
     res = []
   end
-    content_type 'text/javascript'
-    "#{params[:callback]}(#{res.to_json});"
+  return_result res, params[:callback]
 end
+
+def return_result(res, callback)
+  content_type 'text/javascript'
+  json = res.to_json
+  unless callback
+    return json
+  end
+  "#{callback}(#{json});"
+end
+
