@@ -2,14 +2,16 @@ root = (exports ? this)
 
 class Architect
   CANMORE_REQUEST_URL: '/'
-  TEST_LOCATION: [55.8791, -4.2788, 59]
   LAT_METERS: 100000
   LONG_METERS: 70000
-  RADIUS: 500
+  RADIUS: 400
   DEFAULT_HEIGHT_SDU: 4.5
-  DISTANCE_SCALE_FACTOR: 1.75
-  MIN_SCALING_DISTANCE: 100
+  MIN_SCALING_DISTANCE: 50
+  DISTANCE_SCALE_LOG: 1.5
+  MIN_SCALING_FACTOR: 0.1
   OFFSET_Y_RANDOM_FACTOR: 3
+  REQUEST_INTERVAL: 50
+  LOG_LEVEL: 2
 
   constructor: (canmoreRequestUrl) ->
     @canmoreRequestUrl = canmoreRequestUrl || @CANMORE_REQUEST_URL
@@ -17,12 +19,31 @@ class Architect
     @currentLocation = new AR.GeoLocation(0, 0, 0)
     @photoGeoObjects = {}
     @placemarkGeoObjects = {}
+    @imgResources = {}
     @locationChangedFunc = null
     @mode = null
+    @requestBuffer = []
+    @timeSinceLastRequest = @REQUEST_INTERVAL
+    @objectsToLoad = 0
+    setInterval (=> @clearRequestBuffer()), @REQUEST_INTERVAL
+    @request "status?loadedARview=true"
     
-  log:(msg) ->
-    $("#status").html "<p>#{msg}</p>"
+  log:(msg, level = 1) ->
+    if level >= @LOG_LEVEL
+      console.log msg
 
+  request:(msg) ->
+    @requestBuffer.push msg
+
+  clearRequestBuffer: ->
+    report = @requestBuffer.shift()
+    if report == undefined
+      return
+    @sendRequest(report)    
+
+  sendRequest:(msg) ->
+    document.location = "architectsdk://#{msg}"
+        
   setLocation: (loc, lat, long, alt) ->
     [loc.latitude, loc.longitude, loc.altitude] = [lat, long, alt]
 
@@ -38,25 +59,36 @@ class Architect
   setMode:(mode, data = null) ->
     @log "setting mode #{mode}"
     return if mode == @mode
-    if mode == 'photo'
+    if mode == "photo"
       @setupPhotoMode()
     else
-      @setupPlacemarkMode(data)
+      @setupPlacemarkMode()
 
   setupPhotoMode: ->
+    @log "setting up photo mode"
     @locationChangedFunc = null
     @mode = 'photo'
-    @disablePlacemarks
-    @cleanUpPhotos
-    @enablePhotos
+    @disablePlacemarks()
+    @enablePhotos()
+    if @locationChangeSufficient() || @empty @photoGeoObjects
+      @cleanUpPhotos()
+      @updatePhotos()
     @locationChangedFunc = @maybeUpdatePhotos
+
+  locationChangeSufficient: ->
+    @currentLocation.distanceTo(@lastLocation) > @RADIUS / 5
 
   maybeUpdatePhotos: ->
     @log "conditionally updating photos"
-    if @currentLocation.distanceTo(@lastLocation) > @RADIUS / 5
+    if @locationChangeSufficient()
       @setLastLocation @currentLocation
-      @cleanUpPhotos
+      @cleanUpPhotos()
       @updatePhotos()
+
+  disablePhotos: ->
+    @log "disabling photos"
+    for id, photo of @photoGeoObjects
+      photo.enabled = false
 
   enablePhotos: ->
     @log "enabling photos"
@@ -82,7 +114,7 @@ class Architect
 
   createPhotoGeoObject: (siteId) ->
     @log "creating photoGeoObject for id #{siteId}"
-    if not @photoGeoObjects[siteId]
+    if @photoGeoObjects[siteId] == undefined
       @serverRequest "details_for_site_id/", [siteId], (siteDetails) =>
         @log "creating geoObject with loc #{siteDetails.lat}, #{siteDetails.long}: #{siteDetails.thumbs[0]}"
         location = { lat: siteDetails.lat, long: siteDetails.long, alt: @currentLocation.altitude }
@@ -91,48 +123,54 @@ class Architect
   getPhotosForLocation: (loc) ->
     @log "getting photos for location #{loc.latitude}, #{loc.longitude}"
     @serverRequest "site_ids_for_location/", [loc.latitude, loc.longitude, @RADIUS], (siteIds) =>
-      @log "Found #{siteIds.length} images"
+      @log "Found #{siteIds.length} images", 2
+      @setObjectsToLoad siteIds.length
       for id in siteIds
         @createPhotoGeoObject id
 
-  setupPlacemarkMode:() ->
+  setupPlacemarkMode: ->
+    @log "setting up placemark mode"
     @locationChangedFunc = null
-    @mode = 'placemark'
+    @mode = "placemark"
     if @empty(@placemarkGeoObjects)
       @requestPlacemarkData()
+    @disablePhotos()
     @enablePlacemarks()
+    if @locationChangeSufficient()
+      @updatePlacemarks
     @locationChangedFunc = @maybeUpdatePlacemarks
 
   requestPlacemarkData: ->
     @log "requesting placemark data"
-    document.location = "architectsdk://requestplacemarkdata"
+    @request "requestplacemarkdata"
     
   setPlacemarkData: (data) ->
     @log "setting placemark data"
-    count = 0
-    @destroyPlacemarks
+    @destroyPlacemarks()
+    @setObjectsToLoad @lengthOf(data)
     for id, details of data
-      count++
-      @log count
-      @createGeoObject details.location, details.imgUri, id, 'placemarkGeoObjects'
+      @createGeoObject details.location, details.imgUri, id, "placemarkGeoObjects"
+    @log "created placemarks"
 
   destroyPlacemarks: ->
     for id, placemark of @placemarkGeoObjects
-      destroyGeoObject 'placemark', id
+      @destroyGeoObject "placemark", id
 
   enablePlacemarks: ->
     for id, placemark of @placemarkGeoObjects
       placemark.enabled = true
 
   disablePlacemarks: ->
+    @log "disabling placemarks"
     for id, placemark of @placemarkGeoObjects
+      @log "disabling placemark #{id}"
       placemark.enabled = false
 
   maybeUpdatePlacemarks: ->
     @log "conditionally updating placemarks"
     if @currentLocation.distanceTo(@lastLocation) > @RADIUS / 5
       @setLastLocation @currentLocation
-      @updatePlacemarks
+      @updatePlacemarks()
 
   updatePlacemarks: ->
     @log "updating placemarks"
@@ -143,17 +181,22 @@ class Architect
       for drawable in placemark.drawables.cam
         @setOpacityAndScaleOnDrawable(drawable, distance)
 
-  setOpacityAndScaleOnDrawable: (drawable, distance) ->
-    scalingFactor = @MIN_SCALING_DISTANCE / (distance / @DISTANCE_SCALE_FACTOR)
-    scale = Math.min 1, scalingFactor
-    opacity = Math.min 1, scalingFactor
-    drawable.scale = scale
-    drawable.opacity = opacity 
+  scalingFactor: (distance) ->
+    return 1 unless distance > @MIN_SCALING_DISTANCE
+    logVal = Math.log(distance / @MIN_SCALING_DISTANCE) / Math.log(@DISTANCE_SCALE_LOG)
+    Math.max(1 - (logVal / 10), @MIN_SCALING_FACTOR)
 
-  destroyGeoObject: (type = 'photo', id) ->
+  setOpacityAndScaleOnDrawable: (drawable, distance) ->
+    scalingFactor = @scalingFactor distance
+    drawable.scale = scalingFactor
+    drawable.opacity = scalingFactor
+
+  destroyGeoObject: (type = "photo", id) ->
+    @log "destroying #{type} geoObjects"
     collection = @["#{type}GeoObjects"]
     geo = collection[id]
     for drawable in geo.drawables.cam
+      delete @imgResources[drawable.imageResource.uri]
       drawable.imageResource.destroy()
       drawable.destroy()
     for location in geo.locations
@@ -179,17 +222,27 @@ class Architect
 
   objectWasClicked: (id, collection) ->
     @log "clicked #{id}, #{collection}"
-    document.location = "architectsdk://clickedobject?id=#{id}&collection=#{collection}"
-  
+    @request "clickedobject?id=#{id}&collection=#{collection}"
+
+  setObjectsToLoad: (num) ->
+    @objectsToLoad = num
+    @request "status?objectstoload=#{num}"
+      
   createImageResource: (uri, geoObject) ->
+    if @imgResources[uri] != undefined
+      geoObject.enabled = true
+      @setObjectsToLoad --@objectsToLoad
+      return @imgResources[uri]
     @log "creating imageResource for #{uri}"
     imgRes = new AR.ImageResource uri,
       onError: =>
         @log "error loading image #{uri}"
       onLoaded: =>
+        @setObjectsToLoad --@objectsToLoad
         unless imgRes.getHeight() is 109 and imgRes.getWidth() is 109
           @log "loaded image #{uri}"
           geoObject.enabled = true
+    @imgResources[uri] = imgRes
     return imgRes
 
   createImageDrawable: (imgRes, options) ->
@@ -205,6 +258,11 @@ class Architect
       return false
     true
 
+  lengthOf: (object) ->
+    count = 0
+    for key, val of object
+      count++
+    count
 
 root.Canmore =
   Architect: Architect
