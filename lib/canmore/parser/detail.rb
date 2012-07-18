@@ -1,6 +1,8 @@
 module Canmore
   module Parser
     class Detail < Base
+      require 'erubis'
+
       def site_name
         name = @doc.xpath("//div[@id='map']//h1/span/text()").to_s
         sanitize name
@@ -9,12 +11,14 @@ module Canmore
       def site_description
         headings = @doc.xpath("//h3[@class='clearl']")
         content_sections = @doc.xpath("//h3[@class='clearl']/following-sibling::p[1]")
-        details = ""
+        content = ""
         headings.zip(content_sections).each do |h, c| 
-          details << "<h3>#{sanitize(h.to_s)}</h3>" 
-          details << "<p>#{sanitize(c.to_s)}</p>"
+          content << "<h3>#{sanitize(h.to_s)}</h3>" 
+          content << "<p>#{sanitize(c.to_s)}</p>"
         end
-        details
+        rhtml = IO.read(File.expand_path("site_description.rhtml", File.dirname(__FILE__)))
+        content_html = Erubis::Eruby.new(rhtml)
+        content_html.result(:content => content)
       end
 
       def ngr
