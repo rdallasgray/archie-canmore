@@ -9,9 +9,10 @@ module Canmore
       def site_description
         headings = @doc.xpath("//h3[@class='clearl']")
         content_sections = @doc.xpath("//h3[@class='clearl']/following-sibling::p[1]")
-        details = []
+        details = ""
         headings.zip(content_sections).each do |h, c| 
-          details << { :heading => sanitize(h.to_s), :content => sanitize(c.to_s) }
+          details << "<h3>#{sanitize(h.to_s)}</h3>" 
+          details << "<p>#{sanitize(c.to_s)}</p>"
         end
         details
       end
