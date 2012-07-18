@@ -21,8 +21,8 @@ end
 get '/site_ids_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().site_ids_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
-  rescue => error
-    puts "Error: #{error.to_s}"
+  rescue
+    puts $!, $@
     res = []
   end
   return_result res, params[:callback]
@@ -31,8 +31,8 @@ end
 get '/thumb_links_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().thumb_links_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
-  rescue => error
-    puts "Error: #{error.to_s}"
+  rescue
+    puts $!, $@
     res = []
   end
   return_result res, params[:callback]
@@ -41,8 +41,8 @@ end
 get '/details_for_site_id/:id' do
   begin
     res = Canmore::Request.new().details_for_site_id params[:id]
-  rescue => error
-    puts "Error: #{error.to_s}"
+  rescue
+    puts $!, $@
     res = []
   end
   return_result res, params[:callback]

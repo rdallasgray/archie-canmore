@@ -2,11 +2,18 @@ module Canmore
   module Parser
     class Detail < Base
       def site_name
-        @doc.xpath("//div[@id='map']//h1/span/text()").to_s
+        name = @doc.xpath("//div[@id='map']//h1/span/text()").to_s
+        sanitize name
       end
 
       def site_description
-        html = @doc.xpath("//h3[text()='Recording Your Heritage Online']/following-sibling::p[1]").to_s
+        headings = @doc.xpath("//h3[@class='clearl']")
+        content_sections = @doc.xpath("//h3[@class='clearl']/following-sibling::p[1]")
+        details = []
+        headings.zip(content_sections).each do |h, c| 
+          details << { :heading => sanitize(h.to_s), :content => sanitize(c.to_s) }
+        end
+        details
       end
 
       def ngr

@@ -1,14 +1,17 @@
 module Canmore
   module Parser
     class Base
+      require 'sanitize'
+
       def initialize(doc)
         @doc = Nokogiri::HTML(doc)
       end
 
       private
-      
-      def squeeze_line_breaks(str)
-        str.gsub(/(\n<br\/>){2,}/, "<br/>").gsub(/\n{2,}/, "\n")
+
+      def sanitize(html)
+        cleaned = Sanitize.clean(html)
+        cleaned.squeeze(" ").strip().gsub(/\n/, "\n\n")
       end
     end
   end
