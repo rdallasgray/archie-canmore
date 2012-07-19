@@ -13,8 +13,10 @@ module Canmore
         content_sections = @doc.xpath("//h3[@class='clearl']/following-sibling::p[1]")
         content = ""
         headings.zip(content_sections).each do |h, c| 
-          content << "<h3>#{sanitize(h.to_s)}</h3>" 
-          content << "<p>#{sanitize(c.to_s)}"
+          unless (c.to_s().squeeze().empty?)
+            content << "<h3>#{sanitize(h.to_s)}</h3>" 
+            content << "<p>#{sanitize(c.to_s)}"
+          end
         end
         rhtml = IO.read(File.expand_path("site_description.rhtml", File.dirname(__FILE__)))
         content_html = Erubis::Eruby.new(rhtml)
