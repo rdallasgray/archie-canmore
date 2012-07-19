@@ -14,7 +14,7 @@ module Canmore
         content = ""
         headings.zip(content_sections).each do |h, c| 
           content << "<h3>#{sanitize(h.to_s)}</h3>" 
-          content << "<p>#{sanitize(c.to_s)}</p>"
+          content << "<p>#{sanitize(c.to_s)}"
         end
         rhtml = IO.read(File.expand_path("site_description.rhtml", File.dirname(__FILE__)))
         content_html = Erubis::Eruby.new(rhtml)

@@ -11,7 +11,7 @@ module Canmore
 
       def sanitize(html)
         cleaned = Sanitize.clean(html)
-        cleaned.squeeze(" ").strip().gsub(/\n/, "<br/><br/>")
+        cleaned.squeeze(" ").strip().gsub(/\n/, "<p>")
       end
     end
   end
