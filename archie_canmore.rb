@@ -48,6 +48,16 @@ get '/details_for_site_id/:id' do
   return_result res, params[:callback]
 end
 
+get '/image_for_id_at_size/:id/:size' do
+  begin
+    res = Canmore::Request.new().image_for_id_at_size params[:id], params[:size]
+  rescue
+    puts $!, $@
+    halt 404
+  end
+  redirect res
+end
+
 def return_result(res, callback)
   content_type 'text/javascript'
   json = res.to_json

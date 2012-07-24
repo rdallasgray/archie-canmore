@@ -50,6 +50,11 @@ module Canmore
       details
     end
 
+    def image_for_id_at_size(id, size) 
+      "#{CANMORE_URL}/images/#{size}/#{id}/"
+    end
+      
+
     private
 
     def get_html(url, params = nil)
