@@ -29,7 +29,8 @@ module Canmore
       end
 
       def image_ids
-        @doc.xpath("//div[@id='mygallery']//a/@rel")
+        links = @doc.xpath("//div[@id='mygallery']//a/@href").to_ary
+        links.map {|link| link.to_s.split("/").last }
       end
     end
   end
