@@ -42,6 +42,7 @@ module Canmore
       image_ids = parser.image_ids
       ngr = parser.ngr
       location = Silva::Location.from(:gridref, :gridref => ngr).to(:wgs84)
+      details[:site_id] = id
       details[:lat], details[:long] = location.lat, location.long
       details[:site_name] = parser.site_name
       details[:images] = image_ids.to_ary
