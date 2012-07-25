@@ -6,14 +6,6 @@
 
   Architect = (function() {
 
-    Architect.prototype.CANMORE_REQUEST_URL = '/';
-
-    Architect.prototype.LAT_METERS = 100000;
-
-    Architect.prototype.LONG_METERS = 70000;
-
-    Architect.prototype.RADIUS = 400;
-
     Architect.prototype.DEFAULT_HEIGHT_SDU = 4.5;
 
     Architect.prototype.MIN_SCALING_DISTANCE = 50;
@@ -30,7 +22,6 @@
 
     function Architect(canmoreRequestUrl) {
       var _this = this;
-      this.canmoreRequestUrl = canmoreRequestUrl || this.CANMORE_REQUEST_URL;
       this.lastLocation = new AR.GeoLocation(0, 0, 0);
       this.currentLocation = new AR.GeoLocation(0, 0, 0);
       this.photoGeoObjects = {};
@@ -40,7 +31,6 @@
       this.mode = null;
       this.requestBuffer = [];
       this.timeSinceLastRequest = this.REQUEST_INTERVAL;
-      this.objectsToLoad = 0;
       setInterval((function() {
         return _this.clearRequestBuffer();
       }), this.REQUEST_INTERVAL);
@@ -157,7 +147,7 @@
 
     Architect.prototype.updatePhotos = function() {
       this.log("updating photos");
-      return this.getPhotosForLocation(this.currentLocation);
+      return this.requestPhotoData;
     };
 
     Architect.prototype.cleanUpPhotos = function() {
@@ -189,37 +179,20 @@
       return _results;
     };
 
-    Architect.prototype.createPhotoGeoObject = function(siteId) {
-      var _this = this;
-      this.log("creating photoGeoObject for id " + siteId);
-      if (this.photoGeoObjects[siteId] === void 0) {
-        return this.serverRequest("details_for_site_id/", [siteId], function(siteDetails) {
-          var location;
-          _this.log("creating geoObject with loc " + siteDetails.lat + ", " + siteDetails.long + ": " + siteDetails.thumbs[0]);
-          location = {
-            lat: siteDetails.lat,
-            long: siteDetails.long,
-            alt: _this.currentLocation.altitude
-          };
-          return _this.createGeoObject(location, siteDetails.thumbs[0], siteId, 'photoGeoObjects');
-        });
-      }
+    Architect.prototype.requestPhotoData = function() {
+      this.log("requesting photo data");
+      return this.request("requestphotodata");
     };
 
-    Architect.prototype.getPhotosForLocation = function(loc) {
-      var _this = this;
-      this.log("getting photos for location " + loc.latitude + ", " + loc.longitude);
-      return this.serverRequest("site_ids_for_location/", [loc.latitude, loc.longitude, this.RADIUS], function(siteIds) {
-        var id, _i, _len, _results;
-        _this.log("Found " + siteIds.length + " images", 2);
-        _this.setObjectsToLoad(siteIds.length);
-        _results = [];
-        for (_i = 0, _len = siteIds.length; _i < _len; _i++) {
-          id = siteIds[_i];
-          _results.push(_this.createPhotoGeoObject(id));
-        }
-        return _results;
-      });
+    Architect.prototype.setPhotoData = function(data) {
+      var details, id;
+      this.log("setting photo data");
+      this.cleanUpPhotos();
+      for (id in data) {
+        details = data[id];
+        this.createGeoObject(details.location, details.imgUri, id, "photoGeoObjects");
+      }
+      return this.log("created photos");
     };
 
     Architect.prototype.setupPlacemarkMode = function() {
@@ -246,7 +219,6 @@
       var details, id;
       this.log("setting placemark data");
       this.destroyPlacemarks();
-      this.setObjectsToLoad(this.lengthOf(data));
       for (id in data) {
         details = data[id];
         this.createGeoObject(details.location, details.imgUri, id, "placemarkGeoObjects");
@@ -422,15 +394,6 @@
 
     Architect.prototype.createImageDrawable = function(imgRes, options) {
       return new AR.ImageDrawable(imgRes, this.DEFAULT_HEIGHT_SDU, options);
-    };
-
-    Architect.prototype.serverRequest = function(url, params, callback) {
-      var requestUrl;
-      params || (params = []);
-      requestUrl = this.canmoreRequestUrl + url + params.join('/') + '?callback=?';
-      return $.getJSON(requestUrl, function(data) {
-        return callback(data);
-      });
     };
 
     Architect.prototype.empty = function(object) {

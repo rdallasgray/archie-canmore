@@ -1,10 +1,6 @@
 root = (exports ? this)
 
 class Architect
-  CANMORE_REQUEST_URL: '/'
-  LAT_METERS: 100000
-  LONG_METERS: 70000
-  RADIUS: 400
   DEFAULT_HEIGHT_SDU: 4.5
   MIN_SCALING_DISTANCE: 50
   DISTANCE_SCALE_LOG: 1.5
@@ -14,7 +10,6 @@ class Architect
   LOG_LEVEL: 2
 
   constructor: (canmoreRequestUrl) ->
-    @canmoreRequestUrl = canmoreRequestUrl || @CANMORE_REQUEST_URL
     @lastLocation = new AR.GeoLocation(0, 0, 0)
     @currentLocation = new AR.GeoLocation(0, 0, 0)
     @photoGeoObjects = {}
@@ -24,7 +19,6 @@ class Architect
     @mode = null
     @requestBuffer = []
     @timeSinceLastRequest = @REQUEST_INTERVAL
-    @objectsToLoad = 0
     setInterval (=> @clearRequestBuffer()), @REQUEST_INTERVAL
     @request "status?loadedARview=true"
     
@@ -97,7 +91,7 @@ class Architect
 
   updatePhotos: ->
     @log "updating photos"
-    @getPhotosForLocation @currentLocation
+    @requestPhotoData
 
   cleanUpPhotos: ->
     @log "cleaning up photos"
@@ -112,21 +106,16 @@ class Architect
         for drawable in item.drawables.cam
           @setOpacityAndScaleOnDrawable(drawable, distance)
 
-  createPhotoGeoObject: (siteId) ->
-    @log "creating photoGeoObject for id #{siteId}"
-    if @photoGeoObjects[siteId] == undefined
-      @serverRequest "details_for_site_id/", [siteId], (siteDetails) =>
-        @log "creating geoObject with loc #{siteDetails.lat}, #{siteDetails.long}: #{siteDetails.thumbs[0]}"
-        location = { lat: siteDetails.lat, long: siteDetails.long, alt: @currentLocation.altitude }
-        @createGeoObject location, siteDetails.thumbs[0], siteId, 'photoGeoObjects'
-          
-  getPhotosForLocation: (loc) ->
-    @log "getting photos for location #{loc.latitude}, #{loc.longitude}"
-    @serverRequest "site_ids_for_location/", [loc.latitude, loc.longitude, @RADIUS], (siteIds) =>
-      @log "Found #{siteIds.length} images", 2
-      @setObjectsToLoad siteIds.length
-      for id in siteIds
-        @createPhotoGeoObject id
+  requestPhotoData: ->
+    @log "requesting photo data"
+    @request "requestphotodata"
+    
+  setPhotoData: (data) ->
+    @log "setting photo data"
+    @cleanUpPhotos()
+    for id, details of data
+      @createGeoObject details.location, details.imgUri, id, "photoGeoObjects"
+    @log "created photos"
 
   setupPlacemarkMode: ->
     @log "setting up placemark mode"
@@ -147,7 +136,6 @@ class Architect
   setPlacemarkData: (data) ->
     @log "setting placemark data"
     @destroyPlacemarks()
-    @setObjectsToLoad @lengthOf(data)
     for id, details of data
       @createGeoObject details.location, details.imgUri, id, "placemarkGeoObjects"
     @log "created placemarks"
@@ -247,11 +235,6 @@ class Architect
 
   createImageDrawable: (imgRes, options) ->
     new AR.ImageDrawable imgRes, @DEFAULT_HEIGHT_SDU, options
-
-  serverRequest: (url, params, callback) ->
-    params ||= []
-    requestUrl = @canmoreRequestUrl + url + params.join('/') + '?callback=?'
-    $.getJSON requestUrl, (data) -> callback(data)
 
   empty: (object) ->
     for key, val of object
