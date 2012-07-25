@@ -31,11 +31,27 @@ module Canmore
       Canmore::Parser::Search.new(html).thumb_links.map {|link| CANMORE_URL + link}
     end
 
+    def site_images_for_location(radius, location)
+      site_ids = site_ids_for_location(radius, location)
+      image_details = []
+      site_ids.each do |id|
+        details = details_for_site_id(id)
+        minimal_details = {
+          :site_id => id,
+          :thumb_url => "#{CANMORE_URL}#{THUMB_URL}#{details[:images].first}/",
+          :lat => details[:lat],
+          :long => details[:long]
+        }
+        image_details << minimal_details
+      end
+      image_details
+    end
+
     ##
     # Return a hash of details on a given site, given a six-digit rel to search on.
     #
     def details_for_site_id(id)
-      link = DETAIL_URL.sub(/:id/, id)
+      link = detail_url_for_id(id)
       details = { :site_link => CANMORE_URL + link }
       html = get_html(link)
       parser = Canmore::Parser::Detail.new(html)
@@ -62,7 +78,11 @@ module Canmore
       response = @client.get(CANMORE_URL + url, :query => params)
       response.body
     end
-    
+
+    def detail_url_for_id(id)
+      DETAIL_URL.sub(/:id/, id)
+    end
+
     def search_by_location(radius, location)
       gridref = Silva::Location.from(:wgs84, :lat => location[:lat], :long => location[:long]).to(:gridref)
       params = SEARCH_DEFAULT_PARAMS.merge({ :ngr => gridref.to_s, :locat_xy_radius_m => radius })

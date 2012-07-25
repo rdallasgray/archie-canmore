@@ -28,6 +28,16 @@ get '/site_ids_for_location/:lat/:long/:rad' do
   return_result res, params[:callback]
 end
 
+get '/site_images_for_location/:lat/:long/:rad' do
+  begin
+    res = Canmore::Request.new().site_images_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
+  rescue
+    puts $!, $@
+    res = []
+  end
+  return_result res, params[:callback]
+end
+
 get '/thumb_links_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().thumb_links_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
