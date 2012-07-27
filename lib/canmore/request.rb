@@ -37,6 +37,7 @@ module Canmore
       site_ids.each do |id|
         details = details_for_site_id(id)
         minimal_details = {
+          :site_name => details[:site_name],
           :location => {
             :lat => details[:lat],
             :long => details[:long],
