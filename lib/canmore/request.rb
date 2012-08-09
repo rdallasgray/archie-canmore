@@ -1,6 +1,7 @@
 require 'httparty'
 require 'silva'
 require_relative 'parser'
+require_relative 'model/action_report'
 
 module Canmore
   class Request
@@ -41,7 +42,7 @@ module Canmore
           :location => {
             :lat => details[:lat],
             :long => details[:long],
-            :alt => 0
+            :alt => rand(50) - 25
           },
           :imgUri => "#{CANMORE_URL}#{THUMB_URL}#{details[:images].first}/",
         }
@@ -71,6 +72,15 @@ module Canmore
 
     def image_for_id_at_size(id, size) 
       "#{CANMORE_URL}/images/#{size}/#{id}/"
+    end
+
+    def report_user_action(params)
+      report = Canmore::Model::ActionReport.create(params)
+      report
+    end
+
+    def user_actions()
+      Canmore::Model::ActionReport.all
     end
       
 

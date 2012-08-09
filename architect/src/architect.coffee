@@ -2,12 +2,13 @@ root = (exports ? this)
 
 class Architect
   DEFAULT_HEIGHT_SDU: 4.5
+  RADIUS: 350
   MIN_SCALING_DISTANCE: 50
   DISTANCE_SCALE_LOG: 1.5
   MIN_SCALING_FACTOR: 0.1
-  OFFSET_Y_RANDOM_FACTOR: 3
+  OFFSET_Y_RANDOM_FACTOR: 5
   REQUEST_INTERVAL: 50
-  LOG_LEVEL: 2
+  LOG_LEVEL: 1
 
   constructor: (canmoreRequestUrl) ->
     @lastLocation = new AR.GeoLocation(0, 0, 0)
@@ -20,7 +21,7 @@ class Architect
     @requestBuffer = []
     @timeSinceLastRequest = @REQUEST_INTERVAL
     setInterval (=> @clearRequestBuffer()), @REQUEST_INTERVAL
-    @request "status?loadedARview=true"
+    @request "loadedARView"
     
   log:(msg, level = 1) ->
     if level >= @LOG_LEVEL
@@ -50,12 +51,12 @@ class Architect
     if @locationChangedFunc != null
       @locationChangedFunc()
 
-  setMode:(mode, data = null) ->
+  setMode:(mode) ->
     @log "setting mode #{mode}"
     return if mode == @mode
     if mode == "photo"
       @setupPhotoMode()
-    else
+    else if mode == "placemark"
       @setupPlacemarkMode()
 
   setupPhotoMode: ->
@@ -70,7 +71,9 @@ class Architect
     @locationChangedFunc = @maybeUpdatePhotos
 
   locationChangeSufficient: ->
-    @currentLocation.distanceTo(@lastLocation) > @RADIUS / 5
+    distance = @currentLocation.distanceTo(@lastLocation)
+    @log "distance from last location is #{distance}"
+    distance > @RADIUS / 5
 
   maybeUpdatePhotos: ->
     @log "conditionally updating photos"
@@ -91,7 +94,7 @@ class Architect
 
   updatePhotos: ->
     @log "updating photos"
-    @requestPhotoData
+    @requestPhotoData()
 
   cleanUpPhotos: ->
     @log "cleaning up photos"
@@ -108,13 +111,13 @@ class Architect
 
   requestPhotoData: ->
     @log "requesting photo data"
-    @request "requestphotodata"
+    @request "requestPhotoData.aos"
     
   setPhotoData: (data) ->
     @log "setting photo data"
     @cleanUpPhotos()
     for id, details of data
-      @createGeoObject details.location, details.imgUri, id, "photoGeoObjects"
+      @createGeoObject details.site_name, details.location, details.imgUri, id, "photoGeoObjects"
     @log "created photos"
 
   setupPlacemarkMode: ->
@@ -131,13 +134,13 @@ class Architect
 
   requestPlacemarkData: ->
     @log "requesting placemark data"
-    @request "requestplacemarkdata"
+    @request "requestPlacemarkData.aos"
     
   setPlacemarkData: (data) ->
     @log "setting placemark data"
     @destroyPlacemarks()
     for id, details of data
-      @createGeoObject details.location, details.imgUri, id, "placemarkGeoObjects"
+      @createGeoObject details.site_name, details.location, details.imgUri, id, "placemarkGeoObjects"
     @log "created placemarks"
 
   destroyPlacemarks: ->
@@ -156,7 +159,7 @@ class Architect
 
   maybeUpdatePlacemarks: ->
     @log "conditionally updating placemarks"
-    if @currentLocation.distanceTo(@lastLocation) > @RADIUS / 5
+    if @locationChangeSufficient
       @setLastLocation @currentLocation
       @updatePlacemarks()
 
@@ -178,6 +181,7 @@ class Architect
     scalingFactor = @scalingFactor distance
     drawable.scale = scalingFactor
     drawable.opacity = scalingFactor
+    drawable.offsetY = drawable.origOffsetY * scalingFactor
 
   destroyGeoObject: (type = "photo", id) ->
     @log "destroying #{type} geoObjects"
@@ -192,9 +196,12 @@ class Architect
     geo.destroy()
     delete collection[id]
 
-  createGeoObject: (location, imgUri, id, collectionName) ->
-    @log "creating geoObject #{id} in collection #{collectionName}"
+  createGeoObject: (siteName, location, imgUri, id, collectionName) ->
+    @log "creating geoObject #{id}, #{siteName} in collection #{collectionName}"
     collection = @[collectionName]
+    if collection[id] != undefined
+      @log "object already exists"
+      return
     location = new AR.GeoLocation location.lat, location.long, location.alt
     distance = @currentLocation.distanceTo location
     drawableOptions = 
@@ -202,31 +209,29 @@ class Architect
       enabled: true
     geoObject = new AR.GeoObject location, enabled: false
     imgRes = @createImageResource(imgUri, geoObject)
-    drawable = @createImageDrawable imgRes, drawableOptions
-    drawable.triggers.onClick = => @objectWasClicked id, collectionName
-    @setOpacityAndScaleOnDrawable drawable, distance
-    geoObject.drawables.addCamDrawable(drawable)
+    imgDrawable = @createImageDrawable imgRes, drawableOptions
+    imgDrawable.origOffsetY = imgDrawable.offsetY
+    imgDrawable.triggers.onClick = => @objectWasClicked id, collectionName
+    @setOpacityAndScaleOnDrawable imgDrawable, distance
+    geoObject.drawables.addCamDrawable(imgDrawable)
+    label = @createLabel siteName, drawableOptions
+    @setOpacityAndScaleOnDrawable label, distance
+    geoObject.drawables.addCamDrawable(label)
     collection[id] = geoObject
 
   objectWasClicked: (id, collection) ->
     @log "clicked #{id}, #{collection}"
-    @request "clickedobject?id=#{id}&collection=#{collection}"
-
-  setObjectsToLoad: (num) ->
-    @objectsToLoad = num
-    @request "status?objectstoload=#{num}"
+    @request "clickedObject.aos?id=#{id}&collection=#{collection}"
       
   createImageResource: (uri, geoObject) ->
     if @imgResources[uri] != undefined
       geoObject.enabled = true
-      @setObjectsToLoad --@objectsToLoad
       return @imgResources[uri]
     @log "creating imageResource for #{uri}"
     imgRes = new AR.ImageResource uri,
       onError: =>
         @log "error loading image #{uri}"
       onLoaded: =>
-        @setObjectsToLoad --@objectsToLoad
         unless imgRes.getHeight() is 109 and imgRes.getWidth() is 109
           @log "loaded image #{uri}"
           geoObject.enabled = true
@@ -235,6 +240,18 @@ class Architect
 
   createImageDrawable: (imgRes, options) ->
     new AR.ImageDrawable imgRes, @DEFAULT_HEIGHT_SDU, options
+
+  createLabel: (text, options, distance) ->
+    options.offsetY = options.offsetY - 3
+    options.style = { backgroundColor: "#ffffff" }
+    label = new AR.Label text, 0.75, options
+    label.origOffsetY = options.offsetY
+    label
+
+  serverRequest: (url, params, callback) ->
+    params ||= []
+    requestUrl = @canmoreRequestUrl + url + params.join('/') + '?callback=?'
+    $.getJSON requestUrl, (data) -> callback(data)
 
   empty: (object) ->
     for key, val of object

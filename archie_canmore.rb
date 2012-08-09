@@ -68,6 +68,27 @@ get '/image_for_id_at_size/:id/:size' do
   redirect res
 end
 
+get '/report_user_action' do
+  begin
+    res = Canmore::Request.new().report_user_action params
+  rescue
+    puts $!, $@
+    halt 404
+  end
+  return_result res, params[:callback]
+end
+
+get '/user_actions' do
+  begin
+    res = Canmore::Request.new().user_actions
+  rescue
+    puts $!, $@
+    halt 404
+  end
+  return_result res, params[:callback]
+end
+
+
 def return_result(res, callback)
   content_type 'text/javascript'
   json = res.to_json

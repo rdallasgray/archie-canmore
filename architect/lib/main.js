@@ -3,10 +3,9 @@
 
   $(function() {
     Canmore.archie = new Canmore.Architect("http://glowing-moon-5208.heroku.com/");
-    AR.context.onLocationChanged = function(lat, long, alt, acc) {
+    return AR.context.onLocationChanged = function(lat, long, alt, acc) {
       return Canmore.archie.locationChanged(lat, long, alt, acc);
     };
-    return Canmore.archie.setMode("placemark");
   });
 
 }).call(this);
