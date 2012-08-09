@@ -18,4 +18,3 @@ module Canmore
 end
   
 DataMapper.finalize
-DataMapper.auto_upgrade!
