@@ -10,6 +10,7 @@ module Canmore
       property :id, Serial
       property :action, String
       property :time, DateTime
+      property :run_id, String
       property :device_id, String
       property :lat, Float
       property :long, Float
@@ -18,3 +19,4 @@ module Canmore
 end
   
 DataMapper.finalize
+DataMapper.auto_upgrade!
