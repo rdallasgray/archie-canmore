@@ -36,17 +36,21 @@ module Canmore
       site_ids = site_ids_for_location(radius, location)
       image_details = {}
       site_ids.each do |id|
-        details = details_for_site_id(id)
-        minimal_details = {
-          :site_name => details[:site_name],
-          :location => {
-            :lat => details[:lat],
-            :long => details[:long],
-            :alt => rand(50) - 25
-          },
-          :imgUri => "#{CANMORE_URL}#{THUMB_URL}#{details[:images].first}/",
-        }
-        image_details[id] = minimal_details
+        begin
+          details = details_for_site_id(id)
+          minimal_details = {
+            :site_name => details[:site_name],
+            :location => {
+              :lat => details[:lat],
+              :long => details[:long],
+              :alt => rand(50) - 25
+            },
+            :imgUri => "#{CANMORE_URL}#{THUMB_URL}#{details[:images].first}/",
+          }
+          image_details[id] = minimal_details
+        rescue
+          puts $!, $@
+        end
       end
       image_details
     end
