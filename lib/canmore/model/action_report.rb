@@ -12,6 +12,7 @@ module Canmore
       property :time, DateTime
       property :run_id, String
       property :device_id, String
+      property :battery_level, Float
       property :lat, Float
       property :long, Float
     end
@@ -19,4 +20,4 @@ module Canmore
 end
   
 DataMapper.finalize
-#DataMapper.auto_migrate!
+DataMapper.auto_migrate!
