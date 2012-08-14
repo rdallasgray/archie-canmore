@@ -7,7 +7,8 @@ get '/site_ids_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().site_ids_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
   rescue
-    puts $!, $@
+    p $!
+    puts $@
     res = []
   end
   return_result res, params[:callback]
@@ -17,7 +18,8 @@ get '/site_images_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().site_images_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
   rescue
-    puts $!, $@
+    p $!
+    puts $@
     res = []
   end
   return_result res, params[:callback]
@@ -27,7 +29,8 @@ get '/thumb_links_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().thumb_links_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
   rescue
-    puts $!, $@
+    p $!
+    puts $@
     res = []
   end
   return_result res, params[:callback]
@@ -37,7 +40,8 @@ get '/details_for_site_id/:id' do
   begin
     res = Canmore::Request.new().details_for_site_id params[:id]
   rescue
-    puts $!, $@
+    p $!
+    puts $@
     res = []
   end
   return_result res, params[:callback]
@@ -47,7 +51,8 @@ get '/image_for_id_at_size/:id/:size' do
   begin
     res = Canmore::Request.new().image_for_id_at_size params[:id], params[:size]
   rescue
-    puts $!, $@
+    p $!
+    puts $@
     halt 404
   end
   redirect res
@@ -57,8 +62,9 @@ get '/report_user_action' do
   begin
     res = Canmore::Request.new().report_user_action params
   rescue
-    puts $!, $@
-    halt 404
+    p $!
+    puts $@
+    res = []
   end
   return_result res, params[:callback]
 end
@@ -67,8 +73,9 @@ get '/user_actions' do
   begin
     res = Canmore::Request.new().user_actions
   rescue
-    puts $!, $@
-    halt 404
+    p $!
+    puts $@
+    res = []
   end
   return_result res, params[:callback]
 end
