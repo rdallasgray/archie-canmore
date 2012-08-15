@@ -43,7 +43,7 @@ module Canmore
             :location => {
               :lat => details[:lat],
               :long => details[:long],
-              :alt => rand(30) + 10
+              :alt => rand(20) + 20
             },
             :imgUri => "#{CANMORE_URL}#{THUMB_URL}#{details[:images].first}/",
           }
