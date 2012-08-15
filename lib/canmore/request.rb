@@ -92,7 +92,11 @@ module Canmore
 
     def get_html(url, params = nil)
       puts "getting url #{CANMORE_URL + url} with params #{params.to_s}"
+      if (cache_result = Canmore::Cache.get_request(url, params))
+        return cache_result
+      end
       response = @client.get(CANMORE_URL + url, :query => params)
+      Canmore::Cache.put_request(url, params, response.body)
       response.body
     end
 
