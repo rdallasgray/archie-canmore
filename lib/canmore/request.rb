@@ -59,6 +59,7 @@ module Canmore
     # Return a hash of details on a given site, given a six-digit rel to search on.
     #
     def details_for_site_id(id)
+      return {} 
       link = detail_url_for_id(id)
       details = { :site_link => CANMORE_URL + link }
       html = get_html(link)
