@@ -1,9 +1,10 @@
 require 'digest/md5'
+require 'dalli'
+
+set :cache, Dalli::Client.new
 
 module Canmore
   module Cache
-    @cache = {}
-
     def self.put_request(url, params, result)
       key = url + params.to_s
       self.put(key, result)
@@ -15,11 +16,11 @@ module Canmore
     end
 
     def self.put(key, val)
-      @cache[hash_key(key)] = val
+      settings.cache.set(hash_key(key), val)
     end
 
     def self.get(key)
-      @cache[hash_key(key)]
+      settings.cache.get(hash_key(key))
     end
 
     def self.hash_key(key)

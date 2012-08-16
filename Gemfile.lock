@@ -3,6 +3,7 @@ GEM
   specs:
     addressable (2.2.8)
     bcrypt-ruby (3.0.1)
+    dalli (2.1.0)
     data_objects (0.10.8)
       addressable (~> 2.1)
     datamapper (1.2.0)
@@ -79,6 +80,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  dalli
   datamapper
   dm-postgres-adapter
   erubis
