@@ -5,7 +5,7 @@ DataMapper.setup(:default, ENV['HEROKU_POSTGRESQL_VIOLET_URL'] || 'postgres://lo
 module Canmore
   module Model
     class ActionReport
-      include DataMapper::Resource
+      include DataMapper::Resources
       
       property :id, Serial
       property :action, String
@@ -20,4 +20,4 @@ module Canmore
 end
   
 DataMapper.finalize
-DataMapper.auto_migrate!
+#DataMapper.auto_migrate!
