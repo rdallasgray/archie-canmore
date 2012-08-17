@@ -5,7 +5,7 @@ DataMapper.setup(:default, ENV['HEROKU_POSTGRESQL_VIOLET_URL'] || 'postgres://lo
 module Canmore
   module Model
     class ActionReport
-      include DataMapper::Resources
+      include DataMapper::Resource
       
       property :id, Serial
       property :action, String
