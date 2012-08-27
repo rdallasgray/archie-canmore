@@ -1,6 +1,4 @@
-require 'minitest/spec'
-require 'minitest/autorun'
-
+require_relative 'test_helper'
 require_relative '../lib/canmore'
 
 describe Canmore::Parser::Search do

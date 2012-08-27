@@ -2,6 +2,7 @@ require 'httparty'
 require 'silva'
 require_relative 'parser'
 require_relative 'model/action_report'
+require_relative 'cache'
 
 module Canmore
   class Request
@@ -12,8 +13,9 @@ module Canmore
     THUMB_URL = "/images/m/"
     IMAGE_URL = "/images/l/"
 
-    def initialize(client = HTTParty)
+    def initialize(client = HTTParty, cache = Canmore::Cache)
       @client = client
+      @cache = cache
     end
 
     ##
@@ -92,11 +94,11 @@ module Canmore
 
     def get_html(url, params = nil)
       puts "getting url #{CANMORE_URL + url} with params #{params.to_s}"
-      if (cache_result = Canmore::Cache.get_request(url, params))
+      if (cache_result = @cache.get_request(url, params))
         return cache_result
       end
       response = @client.get(CANMORE_URL + url, :query => params)
-      Canmore::Cache.put_request(url, params, response.body)
+      @cache.put_request(url, params, response.body)
       response.body
     end
 

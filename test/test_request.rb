@@ -1,5 +1,4 @@
-require 'minitest/spec'
-require 'minitest/autorun'
+require_relative 'test_helper'
 
 require_relative '../lib/canmore'
 
@@ -8,7 +7,10 @@ Response = Struct.new('Response', :body)
 describe Canmore::Request do
   before do
     @client = MiniTest::Mock.new
-    @request = Canmore::Request.new(@client)
+    @cache = MiniTest::Mock.new
+    @cache.expect(:get_request, nil, [String, String])
+    @cache.expect(:put_request, nil, [String, String, String])
+    @request = Canmore::Request.new(@client, @cache)
     @search_html_response = Response.new(File.read(File.dirname(__FILE__) + '/mock/search.html'))
     @detail_html_response = Response.new(File.read(File.dirname(__FILE__) + '/mock/detail.html'))
   end
@@ -58,7 +60,7 @@ describe Canmore::Request do
   describe "#details_for_site_id" do
     id = '160711'
     url = Canmore::Request::CANMORE_URL +  Canmore::Request::DETAIL_URL.sub(/:id/, id)
-    details_hash_keys = [:site_link, :lat, :long, :site_name, :images, :site_description]
+    details_hash_keys = [:site_link, :site_id, :lat, :long, :site_name, :images, :site_description]
 
     describe "given a 6-digit id" do
       it "should send a properly-formed get request to the client" do
