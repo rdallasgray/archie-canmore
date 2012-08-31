@@ -47,8 +47,7 @@ module Canmore
               :long => details[:long],
               :alt => rand(20) + 20
             },
-            :imgUri => "#{CANMORE_URL}#{THUMB_URL}#{details[:images].first}/",
-            :images => details[:images]
+            :imgUri => "#{CANMORE_URL}#{THUMB_URL}#{details[:images].first}/"
           }
           image_details[id] = minimal_details
         rescue
