@@ -3,6 +3,7 @@ require 'sinatra'
 require 'json'
 require_relative 'lib/canmore'
 
+# Return a set of site ids for the given latitude, longitude and radius.
 get '/site_ids_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().site_ids_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
@@ -14,6 +15,7 @@ get '/site_ids_for_location/:lat/:long/:rad' do
   return_result res, params[:callback]
 end
 
+# Return details of images  for the given latitude, longitude and radius.
 get '/site_images_for_location/:lat/:long/:rad' do
   begin
     res = Canmore::Request.new().site_images_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
@@ -25,17 +27,7 @@ get '/site_images_for_location/:lat/:long/:rad' do
   return_result res, params[:callback]
 end
 
-get '/thumb_links_for_location/:lat/:long/:rad' do
-  begin
-    res = Canmore::Request.new().thumb_links_for_location(params[:rad].to_i, :lat => params[:lat].to_f, :long => params[:long].to_f)
-  rescue
-    p $!
-    puts $@
-    res = []
-  end
-  return_result res, params[:callback]
-end
-
+# Return details for the given site id.
 get '/details_for_site_id/:id' do
   begin
     res = Canmore::Request.new().details_for_site_id params[:id]
@@ -47,6 +39,7 @@ get '/details_for_site_id/:id' do
   return_result res, params[:callback]
 end
 
+# Get the image for the given id at size [s, m, l].
 get '/image_for_id_at_size/:id/:size' do
   begin
     res = Canmore::Request.new().image_for_id_at_size params[:id], params[:size]
@@ -58,6 +51,7 @@ get '/image_for_id_at_size/:id/:size' do
   redirect res
 end
 
+# Report a user action for evaluation purposes.
 get '/report_user_action' do
   begin
     res = Canmore::Request.new().report_user_action params
@@ -69,6 +63,7 @@ get '/report_user_action' do
   return_result res, params[:callback]
 end
 
+# Return a list of stored user actions.
 get '/user_actions' do
   begin
     res = Canmore::Request.new().user_actions
