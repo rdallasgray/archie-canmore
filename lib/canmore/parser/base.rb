@@ -1,8 +1,13 @@
 module Canmore
   module Parser
+    ##
+    # Simple base class from which detail and search parsers extend.
     class Base
       require 'sanitize'
-
+      
+      ##
+      # Initialise the parser with an HTML document.
+      # @param doc [String] An HTML document as a string.
       def initialize(doc)
         @doc = Nokogiri::HTML(doc)
       end

@@ -1,0 +1,8 @@
+lib/canmore.rb 91aab7dd43222448dc4903896391ea35104a70d5
+lib/canmore/cache.rb b772c4d2d277739dffd7e29ef25fe7bd2e360aaa
+lib/canmore/parser.rb 471a1388ec2ae691983455f014ef14026681d34a
+lib/canmore/request.rb 5ee958c427d760cfafd947c14b7210281dd7cc29
+lib/canmore/parser/base.rb a02e7cf87a69fe29d6e318c7403d784172d339cb
+lib/canmore/parser/search.rb ab504cfc6ee4b0e86728d075c267208084b4fa6d
+lib/canmore/parser/detail.rb 3f07919dfb4abde568deb5bd02a96b1af7b55092
+lib/canmore/model/action_report.rb bf59d38c47887c60edfbb137461c040f0280d894

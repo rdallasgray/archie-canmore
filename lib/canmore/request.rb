@@ -5,6 +5,8 @@ require_relative 'model/action_report'
 require_relative 'cache'
 
 module Canmore
+  ##
+  # Encapsulates logic to make requests to and retrieve responses from the Canmore archive.
   class Request
     CANMORE_URL = "http://canmore.rcahms.gov.uk"
     SEARCH_URL = "/en/results/"
@@ -13,15 +15,21 @@ module Canmore
     THUMB_URL = "/images/m/"
     IMAGE_URL = "/images/l/"
 
+    ##
+    # Initialize, passing an HTTP client and cache. Defaults are HTTParty and Dalli.
+    # @param client An HTTP client object.
+    # @param cache A cache object.
     def initialize(client = HTTParty, cache = Canmore::Cache)
       @client = client
       @cache = cache
     end
 
     ##
-    # Return an array of six-digit numbers which can be used to find individual site records on Canmore,
+    # Get an array of six-digit numbers which can be used to find individual site records on Canmore,
     # given a lat/long location and a radius in which to search.
-    #
+    # @param [Float] radius The radius, in metres, within which to search.
+    # @param [Hash] location A hash of :lat => [Float], :long => [Float]
+    # @return [Array] An array of six-digit id numbers.
     def site_ids_for_location(radius, location)
       html = search_by_location(radius, location)
       detail_links = Canmore::Parser::Search.new(html).detail_links
@@ -29,11 +37,11 @@ module Canmore
       detail_links.select {|link| link.to_s =~ six_digits}.map {|link| link.to_s.match(six_digits)[1]}
     end
 
-    def thumb_links_for_location(radius, location)
-      html = search_by_location(radius, location)
-      Canmore::Parser::Search.new(html).thumb_links.map {|link| CANMORE_URL + link}
-    end
-
+    ##
+    # Get a hash of (minimal) details for sites found within the given radius of the location.
+    # @param [Float] radius The radius, in metres, within which to search.
+    # @param [Hash] location A hash of :lat => [Float], :long => [Float]
+    # @return [Hash] A hash, indexed on site ids, with form :site_name => [String], :location => {:lat => [Float], :long => [Float]}, :imgUri => [String]
     def site_images_for_location(radius, location)
       site_ids = site_ids_for_location(radius, location)
       image_details = {}
@@ -58,8 +66,9 @@ module Canmore
     end
 
     ##
-    # Return a hash of details on a given site, given a six-digit rel to search on.
-    #
+    # Get a hash of details on a given site, given a six-digit site id.
+    # @param id [Integer] A six-digit site id.
+    # @return [Hash] A has of site details in the form :site_link => [String], :site_id => [Integer], :lat => [Float], :long => [Float], :site_name => [String], :images => [Array], site_description => [String]
     def details_for_site_id(id)
       link = detail_url_for_id(id)
       details = { :site_link => CANMORE_URL + link }
@@ -76,15 +85,26 @@ module Canmore
       details
     end
 
+    ##
+    # Get the url for an image with given id and size.
+    # @param id [String] An image id.
+    # @param size [String] s, m or l.
     def image_for_id_at_size(id, size) 
       "#{CANMORE_URL}/images/#{size}/#{id}/"
     end
 
+    ##
+    # Save a report of a user action for evaluation purposes.
+    # @param params [Hash] A hash of parameters which can include :id => [String], :action => [String], :time => [DateTime], :run_id => [String], :device_id => [String], :battery_level => [Float], :lat => [Float], :long => [Float]
+    # @return An ActionReport model initialised with the given parameters.
     def report_user_action(params)
       report = Canmore::Model::ActionReport.create(params)
       report
     end
 
+    ##
+    # Get the full list of stored user actions.
+    # @return A collection of ActionReport models representing all stored action reports.
     def user_actions()
       Canmore::Model::ActionReport.all
     end
